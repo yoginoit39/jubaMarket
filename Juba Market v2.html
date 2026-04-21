@@ -195,7 +195,7 @@ function RegisterScreen({ nav, setUser, type='buyer' }) {
   const handleDone = async () => {
     setBusy(true); setErr('');
     try {
-      const payload = { name:form.name, phone:form.phone, password:form.password||'password123',
+      const payload = { name:form.name, phone:form.phone, password:form.password,
         role:isSeller?'seller':'buyer', email:form.email||undefined,
         location:form.location||undefined, business:form.business||undefined };
       const res = await window.API.register(payload);
@@ -253,9 +253,10 @@ function RegisterScreen({ nav, setUser, type='buyer' }) {
               </div>
             )}
             <div><label style={S.label}>Email (optional)</label><input value={form.email} onChange={e=>s('email',e.target.value)} placeholder="you@gmail.com" style={S.input}/></div>
+            {!isSeller && <div><label style={S.label}>Create Password *</label><input type="password" value={form.password} onChange={e=>s('password',e.target.value)} placeholder="Min. 8 characters" style={S.input}/></div>}
             <div style={{ display:'flex', gap:10 }}>
               <button onClick={()=>setStep(1)} style={{ ...S.outline, flex:1 }}>← Back</button>
-              <button onClick={()=>isSeller?setStep(3):handleDone()} style={{ ...S.primary, flex:2 }}>{isSeller?'Continue →':'Create Account ✓'}</button>
+              <button onClick={()=>isSeller?setStep(3):handleDone()} disabled={!isSeller&&!form.password} style={{ ...S.primary, flex:2, opacity:!isSeller&&!form.password?0.5:1 }}>{isSeller?'Continue →':'Create Account ✓'}</button>
             </div>
           </div>
         )}
