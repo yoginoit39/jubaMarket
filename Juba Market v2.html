@@ -501,7 +501,7 @@ function App() {
 
   return (
     <div style={{ minHeight:'100vh', display:'flex', flexDirection:'column' }}>
-      <Navbar screen={screen} nav={nav} user={user} setUser={setUser}/>
+      <Navbar screen={screen} nav={nav} user={user} setUser={handleSetUser}/>
       <div style={{ flex:1, animation:'fadeIn 0.25s ease' }} key={screen}>
         {screens[screen] || screens.home}
       </div>
