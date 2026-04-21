@@ -9,6 +9,18 @@
 <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script>
+  firebase.initializeApp({
+    apiKey: "AIzaSyA_XgplGmrfDe9dvbnfqgAA-_je4nyf7gQ",
+    authDomain: "juba-market-ee532.firebaseapp.com",
+    projectId: "juba-market-ee532",
+    storageBucket: "juba-market-ee532.firebasestorage.app",
+    messagingSenderId: "793734339868",
+    appId: "1:793734339868:web:80cb7b16fe0baa4cc7eed9"
+  });
+</script>
 <script src="jm-data.js"></script>
 <script src="jm-api.js"></script>
 <style>
@@ -192,6 +204,42 @@ function RegisterScreen({ nav, setUser, type='buyer' }) {
   const s = (k,v) => setForm(f=>({...f,[k]:v}));
   const STATES = ['Central Equatoria','Western Equatoria','Eastern Equatoria','Jonglei','Unity','Upper Nile','Warrap','Northern Bahr el Ghazal','Western Bahr el Ghazal','Lakes'];
 
+  const [otpSent, setOtpSent] = useState(false);
+  const [otp, setOtp] = useState('');
+  const [confirmResult, setConfirmResult] = useState(null);
+  const [otpErr, setOtpErr] = useState('');
+  const [sendingOtp, setSendingOtp] = useState(false);
+  const [verifyingOtp, setVerifyingOtp] = useState(false);
+  const recaptchaRef = useRef(null);
+
+  const sendOtp = async () => {
+    setSendingOtp(true); setOtpErr('');
+    try {
+      if (recaptchaRef.current) { try { recaptchaRef.current.clear(); } catch(e) {} }
+      const verifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', { size:'invisible' });
+      recaptchaRef.current = verifier;
+      const result = await firebase.auth().signInWithPhoneNumber(form.phone, verifier);
+      setConfirmResult(result);
+      setOtpSent(true);
+    } catch(e) {
+      setOtpErr(e.message || 'Failed to send OTP. Check phone number format (+211...)');
+      if (recaptchaRef.current) { try { recaptchaRef.current.clear(); } catch(_) {} recaptchaRef.current = null; }
+    }
+    setSendingOtp(false);
+  };
+
+  const verifyOtp = async () => {
+    setVerifyingOtp(true); setOtpErr('');
+    try {
+      await confirmResult.confirm(otp);
+      setStep(2);
+      setOtpSent(false);
+    } catch(e) {
+      setOtpErr('Invalid OTP. Please try again.');
+    }
+    setVerifyingOtp(false);
+  };
+
   const handleDone = async () => {
     setBusy(true); setErr('');
     try {
@@ -227,12 +275,37 @@ function RegisterScreen({ nav, setUser, type='buyer' }) {
           </div>
         </div>
 
-        {step === 1 && (
+        {step === 1 && !otpSent && (
           <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
             <div><label style={S.label}>Full Name *</label><input value={form.name} onChange={e=>s('name',e.target.value)} placeholder="e.g. Ayen Deng" style={S.input}/></div>
             {isSeller && <div><label style={S.label}>Business / Shop Name *</label><input value={form.business} onChange={e=>s('business',e.target.value)} placeholder="e.g. Ayen Electronics" style={S.input}/></div>}
             <div><label style={S.label}>Phone Number *</label><input value={form.phone} onChange={e=>s('phone',e.target.value)} placeholder="+211 9XX XXX XXX" style={S.input}/></div>
-            <button onClick={()=>setStep(2)} disabled={!form.name||!form.phone} style={{ ...S.primary, width:'100%', padding:'12px', opacity:form.name&&form.phone?1:0.5 }}>Continue →</button>
+            {otpErr && <div style={{ fontSize:12, color:C.red, padding:'8px 12px', background:C.redLight, borderRadius:8 }}>{otpErr}</div>}
+            <div id="recaptcha-container"></div>
+            <button onClick={sendOtp} disabled={!form.name||!form.phone||sendingOtp} style={{ ...S.primary, width:'100%', padding:'12px', opacity:form.name&&form.phone&&!sendingOtp?1:0.5 }}>
+              {sendingOtp ? '📤 Sending OTP…' : '📱 Send OTP →'}
+            </button>
+          </div>
+        )}
+
+        {step === 1 && otpSent && (
+          <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
+            <div style={{ background:C.greenLight, borderRadius:10, padding:'12px 16px', fontSize:13, color:C.green, textAlign:'center' }}>
+              ✓ OTP sent to <strong>{form.phone}</strong>
+            </div>
+            <div>
+              <label style={S.label}>Enter 6-digit OTP</label>
+              <input value={otp} onChange={e=>setOtp(e.target.value.replace(/\D/g,'').slice(0,6))}
+                placeholder="000000" maxLength={6} inputMode="numeric"
+                style={{ ...S.input, fontSize:28, letterSpacing:'0.4em', textAlign:'center', fontFamily:'var(--font-display)', fontWeight:800 }}/>
+            </div>
+            {otpErr && <div style={{ fontSize:12, color:C.red, padding:'8px 12px', background:C.redLight, borderRadius:8 }}>{otpErr}</div>}
+            <button onClick={verifyOtp} disabled={otp.length!==6||verifyingOtp} style={{ ...S.primary, width:'100%', padding:'12px', opacity:otp.length===6&&!verifyingOtp?1:0.5 }}>
+              {verifyingOtp ? 'Verifying…' : '✓ Verify OTP →'}
+            </button>
+            <button onClick={()=>{setOtpSent(false);setOtp('');setOtpErr('');}} style={{ ...S.outline, width:'100%', padding:'10px', fontSize:13 }}>
+              ← Change phone number
+            </button>
           </div>
         )}
 
