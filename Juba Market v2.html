@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Juba Market — South Sudan's Marketplace</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet"/>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="jm-data.js"></script>
+<script src="jm-api.js"></script>
+<style>
+  :root {
+    --font-display: 'Sora', sans-serif;
+    --font-body: 'DM Sans', sans-serif;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body { font-family: var(--font-body); background: oklch(0.97 0.02 85); color: oklch(0.18 0.03 45); min-height: 100vh; font-size: 15px; line-height: 1.6; }
+  input, textarea, select, button { font-family: inherit; }
+  a { color: inherit; text-decoration: none; }
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: oklch(0.93 0.03 80); }
+  ::-webkit-scrollbar-thumb { background: oklch(0.82 0.05 75); border-radius: 3px; }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes fadeIn  { from { opacity:0; } to { opacity:1; } }
+
+  /* Tweak panel */
+  #tweak-panel { position:fixed; bottom:24px; right:24px; z-index:9999; background:white; border:1.5px solid oklch(0.88 0.03 75); border-radius:16px; padding:20px 22px; box-shadow:0 12px 40px rgba(0,0,0,0.16); width:250px; display:none; }
+  #tweak-panel.open { display:block; animation:fadeUp 0.25s ease; }
+  #tweak-panel h4 { font-family:var(--font-display); font-size:14px; font-weight:700; margin-bottom:14px; }
+  .tr { margin-bottom:12px; }
+  .tr label { display:block; font-size:11px; font-weight:700; color:oklch(0.50 0.03 50); margin-bottom:5px; text-transform:uppercase; letter-spacing:0.05em; }
+  .tr select { width:100%; padding:7px 10px; border:1.5px solid oklch(0.88 0.03 75); border-radius:8px; background:oklch(0.97 0.02 85); font-size:13px; cursor:pointer; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<div id="tweak-panel">
+  <h4>✦ Tweaks</h4>
+  <div class="tr"><label>Color Theme</label>
+    <select id="tw-theme">
+      <option value="warm">Warm Amber (Default)</option>
+      <option value="green">Deep Forest</option>
+      <option value="blue">Ocean Blue</option>
+      <option value="earth">Red Earth</option>
+    </select>
+  </div>
+  <div class="tr"><label>Font Style</label>
+    <select id="tw-font">
+      <option value="sora">Sora (Modern)</option>
+      <option value="serif">Georgia (Classic)</option>
+    </select>
+  </div>
+  <div class="tr"><label>Card Style</label>
+    <select id="tw-card">
+      <option value="shadow">Elevated</option>
+      <option value="border">Outlined</option>
+    </select>
+  </div>
+</div>
+
+<script>
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "theme": "warm",
+  "font": "sora",
+  "card": "shadow"
+}/*EDITMODE-END*/;
+const themes = {
+  warm:  ['oklch(0.72 0.16 72)','oklch(0.52 0.16 60)','oklch(0.92 0.08 80)','oklch(0.40 0.13 155)'],
+  green: ['oklch(0.60 0.15 155)','oklch(0.40 0.15 145)','oklch(0.90 0.08 155)','oklch(0.30 0.12 130)'],
+  blue:  ['oklch(0.60 0.14 225)','oklch(0.40 0.14 215)','oklch(0.90 0.07 225)','oklch(0.38 0.12 255)'],
+  earth: ['oklch(0.58 0.14 30)','oklch(0.40 0.14 25)','oklch(0.92 0.06 35)','oklch(0.38 0.12 100)'],
+};
+function applyTweaks(t) {
+  const [g,gd,gl,gr] = themes[t.theme]||themes.warm;
+  const r = document.documentElement.style;
+  r.setProperty('--tw-gold',g); r.setProperty('--tw-gold-dark',gd);
+  r.setProperty('--tw-gold-light',gl); r.setProperty('--tw-green',gr);
+  document.documentElement.style.setProperty('--font-display', t.font==='serif' ? 'Georgia, serif' : "'Sora', sans-serif");
+  window.__cardStyle = t.card;
+}
+applyTweaks(TWEAK_DEFAULTS);
+['tw-theme','tw-font','tw-card'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) {
+    el.value = TWEAK_DEFAULTS[id.replace('tw-','')];
+    el.addEventListener('change', () => {
+      const t = { theme:document.getElementById('tw-theme').value, font:document.getElementById('tw-font').value, card:document.getElementById('tw-card').value };
+      applyTweaks(t);
+      window.parent.postMessage({ type:'__edit_mode_set_keys', edits:t }, '*');
+    });
+  }
+});
+window.addEventListener('message', e => {
+  if (e.data?.type==='__activate_edit_mode') document.getElementById('tweak-panel').classList.add('open');
+  if (e.data?.type==='__deactivate_edit_mode') document.getElementById('tweak-panel').classList.remove('open');
+});
+window.parent.postMessage({ type:'__edit_mode_available' }, '*');
+</script>
+
+<script type="text/babel" src="jm-shared.jsx"></script>
+<script type="text/babel" src="jm-home.jsx"></script>
+<script type="text/babel" src="jm-browse.jsx"></script>
+<script type="text/babel" src="jm-buyer.jsx"></script>
+<script type="text/babel" src="jm-seller.jsx"></script>
+<script type="text/babel" src="jm-admin.jsx"></script>
+<script type="text/babel" src="jm-courier.jsx"></script>
+<script type="text/babel" src="jm-wanted.jsx"></script>
+
+<script type="text/babel">
+const { useState, useEffect, useCallback, useRef } = React;
+
+// ─── Auth screens ─────────────────────────────────────────────────────────
+function LoginScreen({ nav, setUser }) {
+  const [form, setForm] = useState({ phone:'', password:'' });
+  const [err, setErr] = useState('');
+  const [busy, setBusy] = useState(false);
+  const s = (k,v) => setForm(f=>({...f,[k]:v}));
+
+  // Demo credentials hint
+  const DEMOS = [
+    { label:'🛍 Buyer demo', phone:'+211900000001', password:'buyer123' },
+    { label:'🏪 Seller demo', phone:'+211912345678', password:'seller123' },
+    { label:'🛡 Admin demo',  phone:'+211900000000', password:'admin123' },
+  ];
+
+  const handle = async () => {
+    if (!form.phone || !form.password) return;
+    setBusy(true); setErr('');
+    try {
+      const res = await window.API.login(form.phone, form.password);
+      window.API.setToken(res.token);
+      setUser(res.user);
+      const dest = res.user.role === 'admin' ? 'admin' : res.user.role === 'seller' ? 'seller-dashboard' : 'buyer-dashboard';
+      nav(dest);
+    } catch(e) {
+      setErr(e.message || 'Login failed');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div style={{ minHeight:'80vh', display:'flex', alignItems:'center', justifyContent:'center', padding:24 }}>
+      <div style={{ ...S.card, width:'100%', maxWidth:420, padding:36, animation:'fadeUp 0.4s ease' }}>
+        <div style={{ textAlign:'center', marginBottom:28 }}>
+          <div style={{ width:56, height:56, background:C.gold, borderRadius:14, display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 14px' }}>
+            <svg width="26" height="26" viewBox="0 0 18 18" fill="none"><rect x="1" y="1" width="7" height="7" rx="1.5" fill="white"/><rect x="10" y="1" width="7" height="7" rx="1.5" fill="white" opacity="0.7"/><rect x="1" y="10" width="7" height="7" rx="1.5" fill="white" opacity="0.7"/><rect x="10" y="10" width="7" height="7" rx="1.5" fill="white" opacity="0.5"/></svg>
+          </div>
+          <div style={{ fontFamily:'var(--font-display)', fontWeight:800, fontSize:24, marginBottom:4 }}>Welcome back</div>
+          <div style={{ color:C.muted, fontSize:14 }}>Sign in to Juba Market</div>
+        </div>
+
+        {/* Demo quick-login */}
+        <div style={{ background:C.creamDark, borderRadius:10, padding:'12px 14px', marginBottom:18 }}>
+          <div style={{ fontSize:11, fontWeight:700, color:C.muted, textTransform:'uppercase', letterSpacing:'0.05em', marginBottom:8 }}>Quick demo login</div>
+          <div style={{ display:'flex', gap:6, flexWrap:'wrap' }}>
+            {DEMOS.map(d => (
+              <button key={d.label} onClick={()=>setForm({ phone:d.phone, password:d.password })}
+                style={{ background:C.white, border:`1px solid ${C.border}`, borderRadius:6, padding:'5px 10px', fontSize:12, cursor:'pointer', fontFamily:'var(--font-body)', color:C.text }}>
+                {d.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
+          <div><label style={S.label}>Phone Number</label><input value={form.phone} onChange={e=>s('phone',e.target.value)} onKeyDown={e=>e.key==='Enter'&&handle()} placeholder="+211 9XX XXX XXX" style={S.input}/></div>
+          <div><label style={S.label}>Password</label><input type="password" value={form.password} onChange={e=>s('password',e.target.value)} onKeyDown={e=>e.key==='Enter'&&handle()} placeholder="Your password" style={S.input}/></div>
+          {err && <div style={{ background:C.redLight, color:C.red, borderRadius:8, padding:'10px 14px', fontSize:13 }}>⚠ {err}</div>}
+          <button onClick={handle} disabled={busy} style={{ ...S.primary, width:'100%', padding:'13px', fontSize:15, marginTop:4, opacity:busy?0.6:1 }}>{busy ? 'Signing in…' : 'Sign In →'}</button>
+        </div>
+        <div style={{ textAlign:'center', marginTop:20, fontSize:13, color:C.muted }}>
+          No account? <button onClick={()=>nav('register-buyer')} style={{ background:'none', border:'none', color:C.goldDark, fontWeight:700, cursor:'pointer' }}>Register free</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function RegisterScreen({ nav, setUser, type='buyer' }) {
+  const [step, setStep] = useState(1);
+  const isSeller = type === 'seller';
+  const totalSteps = isSeller ? 3 : 2;
+  const [form, setForm] = useState({ name:'', business:'', phone:'', email:'', location:'', category:'', description:'', password:'' });
+  const [err, setErr] = useState('');
+  const [busy, setBusy] = useState(false);
+  const s = (k,v) => setForm(f=>({...f,[k]:v}));
+  const STATES = ['Central Equatoria','Western Equatoria','Eastern Equatoria','Jonglei','Unity','Upper Nile','Warrap','Northern Bahr el Ghazal','Western Bahr el Ghazal','Lakes'];
+
+  const handleDone = async () => {
+    setBusy(true); setErr('');
+    try {
+      const payload = { name:form.name, phone:form.phone, password:form.password||'password123',
+        role:isSeller?'seller':'buyer', email:form.email||undefined,
+        location:form.location||undefined, business:form.business||undefined };
+      const res = await window.API.register(payload);
+      window.API.setToken(res.token);
+      setUser(res.user);
+      nav(isSeller ? 'seller-dashboard' : 'buyer-dashboard');
+    } catch(e) {
+      setErr(e.message || 'Registration failed');
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div style={{ minHeight:'80vh', display:'flex', alignItems:'center', justifyContent:'center', padding:24, paddingTop:48 }}>
+      <div style={{ ...S.card, width:'100%', maxWidth:480, padding:36, animation:'fadeUp 0.4s ease' }}>
+        <div style={{ textAlign:'center', marginBottom:28 }}>
+          <div style={{ fontSize:40, marginBottom:10 }}>{isSeller ? '🏪' : '🛍'}</div>
+          <div style={{ fontFamily:'var(--font-display)', fontWeight:800, fontSize:24, marginBottom:4 }}>
+            {isSeller ? 'Become a Seller' : 'Join as a Buyer'}
+          </div>
+          <div style={{ color:C.muted, fontSize:14 }}>
+            {isSeller ? 'Reach thousands of buyers for free' : 'Discover & contact sellers across South Sudan'}
+          </div>
+          {/* Progress */}
+          <div style={{ display:'flex', gap:6, justifyContent:'center', marginTop:18 }}>
+            {Array.from({length:totalSteps}).map((_,i) => (
+              <div key={i} style={{ height:4, borderRadius:2, background:i<step?C.gold:C.border, width:i<step?36:24, transition:'all 0.3s' }}/>
+            ))}
+          </div>
+        </div>
+
+        {step === 1 && (
+          <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
+            <div><label style={S.label}>Full Name *</label><input value={form.name} onChange={e=>s('name',e.target.value)} placeholder="e.g. Ayen Deng" style={S.input}/></div>
+            {isSeller && <div><label style={S.label}>Business / Shop Name *</label><input value={form.business} onChange={e=>s('business',e.target.value)} placeholder="e.g. Ayen Electronics" style={S.input}/></div>}
+            <div><label style={S.label}>Phone Number *</label><input value={form.phone} onChange={e=>s('phone',e.target.value)} placeholder="+211 9XX XXX XXX" style={S.input}/></div>
+            <button onClick={()=>setStep(2)} disabled={!form.name||!form.phone} style={{ ...S.primary, width:'100%', padding:'12px', opacity:form.name&&form.phone?1:0.5 }}>Continue →</button>
+          </div>
+        )}
+
+        {step === 2 && (
+          <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
+            <div><label style={S.label}>State / Location</label>
+              <select value={form.location} onChange={e=>s('location',e.target.value)} style={{ ...S.input, cursor:'pointer' }}>
+                <option value="">Select your state…</option>
+                {STATES.map(st=><option key={st}>{st}</option>)}
+              </select>
+            </div>
+            {isSeller && (
+              <div><label style={S.label}>Main Category</label>
+                <select value={form.category} onChange={e=>s('category',e.target.value)} style={{ ...S.input, cursor:'pointer' }}>
+                  <option value="">What do you mainly sell?</option>
+                  {['Electronics','Clothing','Food & Agriculture','Furniture','Vehicles','Crafts','Services','Livestock','Building Materials'].map(c=><option key={c}>{c}</option>)}
+                </select>
+              </div>
+            )}
+            <div><label style={S.label}>Email (optional)</label><input value={form.email} onChange={e=>s('email',e.target.value)} placeholder="you@gmail.com" style={S.input}/></div>
+            <div style={{ display:'flex', gap:10 }}>
+              <button onClick={()=>setStep(1)} style={{ ...S.outline, flex:1 }}>← Back</button>
+              <button onClick={()=>isSeller?setStep(3):handleDone()} style={{ ...S.primary, flex:2 }}>{isSeller?'Continue →':'Create Account ✓'}</button>
+            </div>
+          </div>
+        )}
+
+        {isSeller && step === 3 && (
+          <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
+            <div><label style={S.label}>About Your Business</label>
+              <textarea value={form.description} onChange={e=>s('description',e.target.value)} rows={3} placeholder="Tell buyers about your products, delivery options, etc." style={{ ...S.input, resize:'vertical' }}/>
+            </div>
+            <div><label style={S.label}>Create Password</label><input type="password" value={form.password} onChange={e=>s('password',e.target.value)} placeholder="Min. 8 characters" style={S.input}/></div>
+            <div style={{ background:C.greenLight, borderRadius:10, padding:'12px 16px', fontSize:13, color:C.green }}>
+              ✓ Free to register · No commission · Post unlimited listings
+            </div>
+            <div style={{ display:'flex', gap:10 }}>
+              <button onClick={()=>setStep(2)} style={{ ...S.outline, flex:1 }}>← Back</button>
+              <button onClick={handleDone} style={{ ...S.primary, flex:2 }}>Create Seller Account ✓</button>
+            </div>
+          </div>
+        )}
+
+        <div style={{ textAlign:'center', marginTop:20, fontSize:13, color:C.muted }}>
+          {isSeller
+            ? <>Want to buy? <button onClick={()=>nav('register-buyer')} style={{ background:'none', border:'none', color:C.goldDark, fontWeight:700, cursor:'pointer' }}>Register as buyer</button></>
+            : <>Want to sell? <button onClick={()=>nav('register-seller')} style={{ background:'none', border:'none', color:C.goldDark, fontWeight:700, cursor:'pointer' }}>Become a seller</button></>
+          }
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Navbar ───────────────────────────────────────────────────────────────
+function Navbar({ screen, nav, user, setUser }) {
+  const [notifCount] = useState(2);
+  const isAuth = !!user;
+
+  const navLink = (label, target) => (
+    <button onClick={()=>nav(target)} style={{ background:'none', border:'none', cursor:'pointer', fontFamily:'var(--font-body)', fontWeight:screen===target?700:500, fontSize:14, color:screen===target?C.goldDark:C.muted, padding:'4px 10px', borderRadius:8, background:screen===target?C.goldLight:'transparent', transition:'all 0.15s' }}>
+      {label}
+    </button>
+  );
+
+  return (
+    <nav style={{ position:'sticky', top:0, zIndex:500, background:C.white, borderBottom:`1px solid ${C.border}`, boxShadow:'0 1px 8px rgba(0,0,0,0.06)' }}>
+      <div style={{ maxWidth:1200, margin:'0 auto', padding:'0 24px', height:64, display:'flex', alignItems:'center', gap:16 }}>
+        {/* Logo */}
+        <div onClick={()=>nav('home')} style={{ cursor:'pointer', display:'flex', alignItems:'center', gap:10, flexShrink:0 }}>
+          <div style={{ width:36, height:36, background:C.gold, borderRadius:9, display:'flex', alignItems:'center', justifyContent:'center' }}>
+            <svg width="19" height="19" viewBox="0 0 18 18" fill="none"><rect x="1" y="1" width="7" height="7" rx="1.5" fill="white"/><rect x="10" y="1" width="7" height="7" rx="1.5" fill="white" opacity="0.7"/><rect x="1" y="10" width="7" height="7" rx="1.5" fill="white" opacity="0.7"/><rect x="10" y="10" width="7" height="7" rx="1.5" fill="white" opacity="0.5"/></svg>
+          </div>
+          <span style={{ fontFamily:'var(--font-display)', fontWeight:800, fontSize:19, letterSpacing:'-0.02em' }}>
+            Juba<span style={{ color:C.gold }}>Market</span>
+          </span>
+        </div>
+
+        {/* Nav links */}
+        <div style={{ display:'flex', alignItems:'center', gap:4, marginLeft:16, flex:1 }}>
+          {navLink('Home','home')}
+          {navLink('Browse','browse')}
+          {user?.role==='seller' && navLink('My Shop','seller-dashboard')}
+          {user?.role==='buyer' && navLink('Dashboard','buyer-dashboard')}
+          {user?.role==='admin' && navLink('Admin','admin')}
+        </div>
+
+        {/* Right side */}
+        <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+          {isAuth ? (
+            <>
+              {user.role !== 'admin' && (
+                <button style={{ position:'relative', background:C.creamDark, border:'none', borderRadius:8, width:36, height:36, cursor:'pointer', fontSize:18 }}>
+                  🔔
+                  {notifCount > 0 && <div style={{ position:'absolute', top:-4, right:-4, width:18, height:18, borderRadius:'50%', background:C.red, color:'white', fontSize:10, fontWeight:800, display:'flex', alignItems:'center', justifyContent:'center' }}>{notifCount}</div>}
+                </button>
+              )}
+              <div style={{ display:'flex', alignItems:'center', gap:8, background:C.creamDark, borderRadius:10, padding:'6px 12px 6px 6px', cursor:'pointer' }} onClick={()=>nav(user.role==='admin'?'admin':user.role==='seller'?'seller-dashboard':'buyer-dashboard')}>
+                <Avatar initials={user.avatar} size={28} color={user.role==='admin'?C.red:user.role==='seller'?C.green:C.gold}/>
+                <span style={{ fontSize:13, fontWeight:600 }}>{user.name}</span>
+              </div>
+              <button onClick={()=>handleSetUser(null)} style={{ ...S.outline, padding:'7px 14px', fontSize:13 }}>Sign out</button>
+            </>
+          ) : (
+            <>
+              <button onClick={()=>nav('login')} style={{ ...S.outline, padding:'8px 16px', fontSize:13 }}>Sign in</button>
+              <button onClick={()=>nav('register-seller')} style={{ ...S.primary, padding:'8px 18px', fontSize:13 }}>Sell for free →</button>
+            </>
+          )}
+        </div>
+      </div>
+    </nav>
+  );
+}
+
+// ─── Footer ───────────────────────────────────────────────────────────────
+function Footer({ nav }) {
+  return (
+    <footer style={{ background:'oklch(0.16 0.03 45)', color:'rgba(255,255,255,0.65)', marginTop:80, padding:'48px 24px 28px' }}>
+      <div style={{ maxWidth:1200, margin:'0 auto' }}>
+        <div style={{ display:'grid', gridTemplateColumns:'2fr repeat(3,1fr)', gap:40, marginBottom:40 }}>
+          <div>
+            <div style={{ fontFamily:'var(--font-display)', fontWeight:800, fontSize:20, color:'white', marginBottom:12 }}>
+              Juba<span style={{ color:C.gold }}>Market</span>
+            </div>
+            <p style={{ fontSize:13, lineHeight:1.8, marginBottom:16 }}>South Sudan's trusted marketplace. Connect with local sellers, find great deals, and grow your business — all for free.</p>
+            <div style={{ display:'flex', gap:10 }}>
+              {['📱 WhatsApp','📘 Facebook'].map(s => <div key={s} style={{ background:'rgba(255,255,255,0.08)', borderRadius:8, padding:'6px 12px', fontSize:12, cursor:'pointer' }}>{s}</div>)}
+            </div>
+          </div>
+          {[
+            ['Marketplace', ['Browse Products','Daily Deals','Top Sellers','All Categories']],
+            ['Sellers', ['Register as Seller','Seller Dashboard','Boost Listings','Seller Guide']],
+            ['Support', ['Help Center','Safety Tips','Contact Us','Report a Problem']],
+          ].map(([title, links]) => (
+            <div key={title}>
+              <div style={{ color:'white', fontWeight:700, fontSize:12, marginBottom:14, textTransform:'uppercase', letterSpacing:'0.07em' }}>{title}</div>
+              {links.map(l => <div key={l} style={{ fontSize:13, marginBottom:10, cursor:'pointer', transition:'color 0.15s' }}
+                onMouseEnter={e=>e.target.style.color='white'} onMouseLeave={e=>e.target.style.color=''}>{l}</div>)}
+            </div>
+          ))}
+        </div>
+        <div style={{ borderTop:'1px solid rgba(255,255,255,0.1)', paddingTop:22, display:'flex', justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap:12, fontSize:12 }}>
+          <div>© 2026 Juba Market · Made with ❤️ for South Sudan 🇸🇸</div>
+          <div style={{ display:'flex', gap:20 }}>
+            {['Privacy Policy','Terms of Use','Cookie Policy'].map(l => <span key={l} style={{ cursor:'pointer' }}>{l}</span>)}
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+// ─── App ──────────────────────────────────────────────────────────────────
+function App() {
+  const [screen, _setScreen] = useState('home');
+  const [productId, setProductId] = useState(null);
+  const [sellerId, setSellerId] = useState(null);
+  const [initCategory, setInitCategory] = useState('all');
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  const nav = useCallback((s, id=null, cat=null) => {
+    _setScreen(s);
+    if (id && s==='product') setProductId(id);
+    if (id && s==='seller-store') setSellerId(id);
+    if (cat) setInitCategory(cat);
+    window.scrollTo({ top:0, behavior:'instant' });
+  }, []);
+
+  // ── Load data from API on startup ──────────────────────────────────────
+  useEffect(() => {
+    const init = async () => {
+      try {
+        const [products, sellers, wanted, riders] = await Promise.all([
+          window.API.getProducts(),
+          window.API.getSellers(),
+          window.API.getWanted(),
+          window.API.getRiders(),
+        ]);
+        window.JubaData.PRODUCTS  = products;
+        window.JubaData.SELLERS   = sellers;
+        window.JubaData.WANTED_ADS = wanted;
+        window.JubaData.COURIER_RIDERS = riders;
+      } catch(e) {
+        console.warn('API unavailable, using static data', e.message);
+      }
+
+      // Restore auth session
+      if (window.API.isLoggedIn()) {
+        try {
+          const u = await window.API.me();
+          setUser(u);
+        } catch(e) {
+          window.API.clearToken();
+        }
+      }
+
+      // Restore last screen from localStorage
+      try {
+        const saved = JSON.parse(localStorage.getItem('jm2_state') || '{}');
+        if (saved.screen && saved.screen !== 'home') {
+          _setScreen(saved.screen);
+          if (saved.productId) setProductId(saved.productId);
+          if (saved.sellerId) setSellerId(saved.sellerId);
+          if (saved.initCategory) setInitCategory(saved.initCategory);
+        }
+      } catch(e) {}
+
+      setLoading(false);
+    };
+    init();
+  }, []);
+
+  useEffect(() => {
+    if (!loading) {
+      localStorage.setItem('jm2_state', JSON.stringify({ screen, productId, sellerId, initCategory }));
+    }
+  }, [screen, productId, sellerId, initCategory, loading]);
+
+  const handleSetUser = (u) => {
+    setUser(u);
+    if (!u) { window.API.clearToken(); nav('home'); }
+  };
+
+  // Apply tweaks CSS vars reactively
+  useEffect(() => {
+    const iv = setInterval(() => {
+      const r = document.documentElement.style;
+      ['gold','gold-dark','gold-light','green'].forEach(k => {
+        const v = r.getPropertyValue('--tw-'+k);
+        if (v) r.setProperty('--'+k, v);
+      });
+    }, 200);
+    return () => clearInterval(iv);
+  }, []);
+
+  if (loading) return (
+    <div style={{ minHeight:'100vh', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', background:'oklch(0.97 0.02 85)', gap:16 }}>
+      <div style={{ width:56, height:56, background:'oklch(0.72 0.16 72)', borderRadius:14, display:'flex', alignItems:'center', justifyContent:'center' }}>
+        <svg width="28" height="28" viewBox="0 0 18 18" fill="none"><rect x="1" y="1" width="7" height="7" rx="1.5" fill="white"/><rect x="10" y="1" width="7" height="7" rx="1.5" fill="white" opacity="0.7"/><rect x="1" y="10" width="7" height="7" rx="1.5" fill="white" opacity="0.7"/><rect x="10" y="10" width="7" height="7" rx="1.5" fill="white" opacity="0.5"/></svg>
+      </div>
+      <div style={{ fontFamily:'var(--font-display)', fontWeight:800, fontSize:22 }}>Juba<span style={{ color:'oklch(0.72 0.16 72)' }}>Market</span></div>
+      <div style={{ width:32, height:32, border:'3px solid oklch(0.88 0.03 75)', borderTopColor:'oklch(0.72 0.16 72)', borderRadius:'50%', animation:'spin 0.8s linear infinite' }}/>
+      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+    </div>
+  );
+
+  const screens = {
+    home:             <HomeScreen nav={nav}/>,
+    browse:           <BrowseScreen nav={nav} initCategory={initCategory}/>,
+    product:          <ProductScreen nav={nav} productId={productId}/>,
+    'seller-store':   <SellerStoreScreen nav={nav} sellerId={sellerId}/>,
+    login:            <LoginScreen nav={nav} setUser={handleSetUser}/>,
+    'register-buyer': <RegisterScreen nav={nav} setUser={handleSetUser} type="buyer"/>,
+    'register-seller':<RegisterScreen nav={nav} setUser={handleSetUser} type="seller"/>,
+    'buyer-dashboard':<BuyerDashboard nav={nav} user={user}/>,
+    'seller-dashboard':<SellerDashboard nav={nav} user={user} setUser={handleSetUser}/>,
+    admin:            <AdminDashboard nav={nav}/>,
+    courier:          <CourierScreen nav={nav} user={user}/>,
+    wanted:           <WantedScreen nav={nav} user={user}/>,
+    'register-courier':<RegisterScreen nav={nav} setUser={handleSetUser} type="seller"/>,
+  };
+
+  const hideFooter = ['admin'].includes(screen);
+
+  return (
+    <div style={{ minHeight:'100vh', display:'flex', flexDirection:'column' }}>
+      <Navbar screen={screen} nav={nav} user={user} setUser={setUser}/>
+      <div style={{ flex:1, animation:'fadeIn 0.25s ease' }} key={screen}>
+        {screens[screen] || screens.home}
+      </div>
+      {!hideFooter && <Footer nav={nav}/>}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>

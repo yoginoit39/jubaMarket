@@ -1,0 +1,67 @@
+- generic [ref=e3]:
+  - navigation [ref=e12]:
+    - generic [ref=e13]:
+      - generic [ref=e14] [cursor=pointer]:
+        - img [ref=e16]
+        - generic [ref=e21]: JubaMarket
+      - generic [ref=e22]:
+        - button "Home" [ref=e23] [cursor=pointer]
+        - button "Browse" [ref=e24] [cursor=pointer]
+      - generic [ref=e25]:
+        - button "Sign in" [active] [ref=e26] [cursor=pointer]
+        - button "Sell for free →" [ref=e27] [cursor=pointer]
+  - generic [ref=e620]:
+    - generic [ref=e621]:
+      - img [ref=e623]
+      - generic [ref=e628]: Welcome back
+      - generic [ref=e629]: Sign in to Juba Market
+    - generic [ref=e630]:
+      - generic [ref=e631]: Quick demo login
+      - generic [ref=e632]:
+        - button "🛍 Buyer demo" [ref=e633] [cursor=pointer]
+        - button "🏪 Seller demo" [ref=e634] [cursor=pointer]
+        - button "🛡 Admin demo" [ref=e635] [cursor=pointer]
+    - generic [ref=e636]:
+      - generic [ref=e637]:
+        - generic [ref=e638]: Phone Number
+        - textbox "+211 9XX XXX XXX" [ref=e639]
+      - generic [ref=e640]:
+        - generic [ref=e641]: Password
+        - textbox "Your password" [ref=e642]
+      - button "Sign In →" [ref=e643] [cursor=pointer]
+    - generic [ref=e644]:
+      - text: No account?
+      - button "Register free" [ref=e645] [cursor=pointer]
+  - contentinfo [ref=e585]:
+    - generic [ref=e586]:
+      - generic [ref=e587]:
+        - generic [ref=e588]:
+          - generic [ref=e589]: JubaMarket
+          - paragraph [ref=e590]: South Sudan's trusted marketplace. Connect with local sellers, find great deals, and grow your business — all for free.
+          - generic [ref=e591]:
+            - generic [ref=e592] [cursor=pointer]: 📱 WhatsApp
+            - generic [ref=e593] [cursor=pointer]: 📘 Facebook
+        - generic [ref=e594]:
+          - generic [ref=e595]: Marketplace
+          - generic [ref=e596] [cursor=pointer]: Browse Products
+          - generic [ref=e597] [cursor=pointer]: Daily Deals
+          - generic [ref=e598] [cursor=pointer]: Top Sellers
+          - generic [ref=e599] [cursor=pointer]: All Categories
+        - generic [ref=e600]:
+          - generic [ref=e601]: Sellers
+          - generic [ref=e602] [cursor=pointer]: Register as Seller
+          - generic [ref=e603] [cursor=pointer]: Seller Dashboard
+          - generic [ref=e604] [cursor=pointer]: Boost Listings
+          - generic [ref=e605] [cursor=pointer]: Seller Guide
+        - generic [ref=e606]:
+          - generic [ref=e607]: Support
+          - generic [ref=e608] [cursor=pointer]: Help Center
+          - generic [ref=e609] [cursor=pointer]: Safety Tips
+          - generic [ref=e610] [cursor=pointer]: Contact Us
+          - generic [ref=e611] [cursor=pointer]: Report a Problem
+      - generic [ref=e612]:
+        - generic [ref=e613]: © 2026 Juba Market · Made with ❤️ for South Sudan 🇸🇸
+        - generic [ref=e614]:
+          - generic [ref=e615] [cursor=pointer]: Privacy Policy
+          - generic [ref=e616] [cursor=pointer]: Terms of Use
+          - generic [ref=e617] [cursor=pointer]: Cookie Policy
