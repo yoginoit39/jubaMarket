@@ -1,4 +1,4 @@
-// jm-shared.jsx — Shared UI components for Juba Market v2
+// jm-shared.jsx — Shared UI components for Kampala Market
 
 const { useState, useEffect, useCallback, useRef } = React;
 
@@ -102,7 +102,7 @@ function ProductImage({ category, height=160, dealBadge=false }) {
 
 // ─── Product Card ─────────────────────────────────────────────────────────
 function ProductCard({ product, onView, onWishlist, wishlisted=false }) {
-  const { SELLERS } = window.JubaData;
+  const { SELLERS } = window.KampalaData;
   const seller = SELLERS.find(s => s.id === product.sellerId);
   const [hov, setHov] = useState(false);
   const [wl, setWl] = useState(wishlisted);
@@ -125,8 +125,8 @@ function ProductCard({ product, onView, onWishlist, wishlisted=false }) {
         <div style={{ fontFamily:'var(--font-display)', fontWeight:600, fontSize:13.5, lineHeight:1.35, color:C.text }}>{product.title}</div>
         <div style={{ display:'flex', alignItems:'baseline', gap:6 }}>
           {product.dealPrice
-            ? <><span style={{ fontFamily:'var(--font-display)', fontWeight:800, fontSize:17, color:C.red }}>${product.dealPrice}</span><span style={{ fontSize:12, color:C.light, textDecoration:'line-through' }}>${product.price}</span></>
-            : <span style={{ fontFamily:'var(--font-display)', fontWeight:800, fontSize:17, color:C.goldDark }}>${product.price}</span>
+            ? <><span style={{ fontFamily:'var(--font-display)', fontWeight:800, fontSize:17, color:C.red }}>{fmt(product.dealPrice)}</span><span style={{ fontSize:12, color:C.light, textDecoration:'line-through' }}>{fmt(product.price)}</span></>
+            : <span style={{ fontFamily:'var(--font-display)', fontWeight:800, fontSize:17, color:C.goldDark }}>{fmt(product.price)}</span>
           }
         </div>
         <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginTop:'auto', paddingTop:8, borderTop:`1px solid ${C.border}` }}>
@@ -245,8 +245,8 @@ function ContactModal({ seller, product, onClose }) {
       )}
       {tab === 'message' && !sent && (
         <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
-          <div><label style={S.label}>Your Name</label><input value={form.name} onChange={e => setForm(f=>({...f,name:e.target.value}))} placeholder="e.g. Ayen Deng" style={S.input}/></div>
-          <div><label style={S.label}>Your Phone</label><input value={form.phone} onChange={e => setForm(f=>({...f,phone:e.target.value}))} placeholder="+211 9XX XXX XXX" style={S.input}/></div>
+          <div><label style={S.label}>Your Name</label><input value={form.name} onChange={e => setForm(f=>({...f,name:e.target.value}))} placeholder="e.g. Nalwoga Aisha" style={S.input}/></div>
+          <div><label style={S.label}>Your Phone</label><input value={form.phone} onChange={e => setForm(f=>({...f,phone:e.target.value}))} placeholder="+256 7XX XXX XXX" style={S.input}/></div>
           <div><label style={S.label}>Message</label><textarea value={form.message} onChange={e => setForm(f=>({...f,message:e.target.value}))} rows={4} style={{ ...S.input, resize:'vertical' }}/></div>
           {sendErr && <div style={{ fontSize:12, color:C.red }}>{sendErr}</div>}
           <button onClick={async () => {
@@ -307,10 +307,10 @@ function NegotiateModal({ product, seller, onClose }) {
         <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
           <div style={{ background:C.creamDark, borderRadius:10, padding:'12px 16px', display:'flex', justifyContent:'space-between', fontSize:14 }}>
             <span style={{ color:C.muted }}>Listed price</span>
-            <span style={{ fontFamily:'var(--font-display)', fontWeight:800, color:C.goldDark }}>${product?.price}</span>
+            <span style={{ fontFamily:'var(--font-display)', fontWeight:800, color:C.goldDark }}>{fmt(product?.price)}</span>
           </div>
           <div>
-            <label style={S.label}>Your Offer (USD)</label>
+            <label style={S.label}>Your Offer (UGX)</label>
             <input type="number" value={offer} onChange={e => setOffer(e.target.value)} placeholder={`e.g. ${Math.round(product?.price * 0.85)}`} style={{ ...S.input, fontSize:18, fontFamily:'var(--font-display)', fontWeight:700 }}/>
             {offer && Number(offer) < product?.price && <div style={{ fontSize:12, color:C.muted, marginTop:4 }}>That's {Math.round((1 - offer/product?.price)*100)}% below asking price</div>}
           </div>

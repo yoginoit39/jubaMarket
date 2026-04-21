@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Juba Market — South Sudan's Marketplace</title>
+<title>Kampala Market — Uganda's Marketplace</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet"/>
 <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
@@ -128,30 +128,58 @@ const { useState, useEffect, useCallback, useRef } = React;
 
 // ─── Auth screens ─────────────────────────────────────────────────────────
 function LoginScreen({ nav, setUser }) {
-  const [form, setForm] = useState({ phone:'', password:'' });
+  const [phone, setPhone] = useState('');
+  const [otp, setOtp] = useState('');
+  const [otpSent, setOtpSent] = useState(false);
+  const [confirmResult, setConfirmResult] = useState(null);
   const [err, setErr] = useState('');
   const [busy, setBusy] = useState(false);
-  const s = (k,v) => setForm(f=>({...f,[k]:v}));
+  const recaptchaRef = useRef(null);
 
-  // Demo credentials hint
   const DEMOS = [
-    { label:'🛍 Buyer demo', phone:'+211900000001', password:'buyer123' },
-    { label:'🏪 Seller demo', phone:'+211912345678', password:'seller123' },
-    { label:'🛡 Admin demo',  phone:'+211900000000', password:'admin123' },
+    { label:'🛍 Buyer demo', phone:'+256700000001', password:'buyer123' },
+    { label:'🏪 Seller demo', phone:'+256712345678', password:'seller123' },
+    { label:'🛡 Admin demo',  phone:'+256700000000', password:'admin123' },
   ];
 
-  const handle = async () => {
-    if (!form.phone || !form.password) return;
+  const demoLogin = async (d) => {
     setBusy(true); setErr('');
     try {
-      const res = await window.API.login(form.phone, form.password);
-      window.API.setToken(res.token);
-      setUser(res.user);
+      const res = await window.API.login(d.phone, d.password);
+      window.API.setToken(res.token); setUser(res.user);
+      const dest = res.user.role === 'admin' ? 'admin' : res.user.role === 'seller' ? 'seller-dashboard' : 'buyer-dashboard';
+      nav(dest);
+    } catch(e) { setErr(e.message || 'Demo login failed'); } finally { setBusy(false); }
+  };
+
+  const sendOtp = async () => {
+    if (!phone) return;
+    setBusy(true); setErr('');
+    try {
+      if (recaptchaRef.current) { try { recaptchaRef.current.clear(); } catch(_) {} }
+      const verifier = new firebase.auth.RecaptchaVerifier('login-recaptcha-container', { size:'invisible' });
+      recaptchaRef.current = verifier;
+      const result = await firebase.auth().signInWithPhoneNumber(phone, verifier);
+      setConfirmResult(result);
+      setOtpSent(true);
+    } catch(e) {
+      setErr(e.message || 'Failed to send OTP. Use format +256 7XX XXX XXX');
+      if (recaptchaRef.current) { try { recaptchaRef.current.clear(); } catch(_) {} recaptchaRef.current = null; }
+    }
+    setBusy(false);
+  };
+
+  const verifyOtp = async () => {
+    if (otp.length !== 6) return;
+    setBusy(true); setErr('');
+    try {
+      await confirmResult.confirm(otp);
+      const res = await window.API.loginOtp(phone);
+      window.API.setToken(res.token); setUser(res.user);
       const dest = res.user.role === 'admin' ? 'admin' : res.user.role === 'seller' ? 'seller-dashboard' : 'buyer-dashboard';
       nav(dest);
     } catch(e) {
-      setErr(e.message || 'Login failed');
-    } finally {
+      setErr(e.message || 'Invalid OTP or account not found');
       setBusy(false);
     }
   };
@@ -164,7 +192,7 @@ function LoginScreen({ nav, setUser }) {
             <svg width="26" height="26" viewBox="0 0 18 18" fill="none"><rect x="1" y="1" width="7" height="7" rx="1.5" fill="white"/><rect x="10" y="1" width="7" height="7" rx="1.5" fill="white" opacity="0.7"/><rect x="1" y="10" width="7" height="7" rx="1.5" fill="white" opacity="0.7"/><rect x="10" y="10" width="7" height="7" rx="1.5" fill="white" opacity="0.5"/></svg>
           </div>
           <div style={{ fontFamily:'var(--font-display)', fontWeight:800, fontSize:24, marginBottom:4 }}>Welcome back</div>
-          <div style={{ color:C.muted, fontSize:14 }}>Sign in to Juba Market</div>
+          <div style={{ color:C.muted, fontSize:14 }}>Sign in with your phone number</div>
         </div>
 
         {/* Demo quick-login */}
@@ -172,20 +200,47 @@ function LoginScreen({ nav, setUser }) {
           <div style={{ fontSize:11, fontWeight:700, color:C.muted, textTransform:'uppercase', letterSpacing:'0.05em', marginBottom:8 }}>Quick demo login</div>
           <div style={{ display:'flex', gap:6, flexWrap:'wrap' }}>
             {DEMOS.map(d => (
-              <button key={d.label} onClick={()=>setForm({ phone:d.phone, password:d.password })}
-                style={{ background:C.white, border:`1px solid ${C.border}`, borderRadius:6, padding:'5px 10px', fontSize:12, cursor:'pointer', fontFamily:'var(--font-body)', color:C.text }}>
+              <button key={d.label} onClick={()=>demoLogin(d)} disabled={busy}
+                style={{ background:C.white, border:`1px solid ${C.border}`, borderRadius:6, padding:'5px 10px', fontSize:12, cursor:'pointer', fontFamily:'var(--font-body)', color:C.text, opacity:busy?0.5:1 }}>
                 {d.label}
               </button>
             ))}
           </div>
         </div>
 
-        <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
-          <div><label style={S.label}>Phone Number</label><input value={form.phone} onChange={e=>s('phone',e.target.value)} onKeyDown={e=>e.key==='Enter'&&handle()} placeholder="+211 9XX XXX XXX" style={S.input}/></div>
-          <div><label style={S.label}>Password</label><input type="password" value={form.password} onChange={e=>s('password',e.target.value)} onKeyDown={e=>e.key==='Enter'&&handle()} placeholder="Your password" style={S.input}/></div>
-          {err && <div style={{ background:C.redLight, color:C.red, borderRadius:8, padding:'10px 14px', fontSize:13 }}>⚠ {err}</div>}
-          <button onClick={handle} disabled={busy} style={{ ...S.primary, width:'100%', padding:'13px', fontSize:15, marginTop:4, opacity:busy?0.6:1 }}>{busy ? 'Signing in…' : 'Sign In →'}</button>
-        </div>
+        {!otpSent ? (
+          <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
+            <div>
+              <label style={S.label}>Phone Number</label>
+              <input value={phone} onChange={e=>setPhone(e.target.value)} onKeyDown={e=>e.key==='Enter'&&sendOtp()} placeholder="+256 7XX XXX XXX" style={S.input}/>
+            </div>
+            <div id="login-recaptcha-container"></div>
+            {err && <div style={{ background:C.redLight, color:C.red, borderRadius:8, padding:'10px 14px', fontSize:13 }}>⚠ {err}</div>}
+            <button onClick={sendOtp} disabled={!phone||busy} style={{ ...S.primary, width:'100%', padding:'13px', fontSize:15, marginTop:4, opacity:phone&&!busy?1:0.5 }}>
+              {busy ? '📤 Sending OTP…' : '📱 Send OTP →'}
+            </button>
+          </div>
+        ) : (
+          <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
+            <div style={{ background:C.greenLight, borderRadius:10, padding:'12px 16px', fontSize:13, color:C.green, textAlign:'center' }}>
+              ✓ OTP sent to <strong>{phone}</strong>
+            </div>
+            <div>
+              <label style={S.label}>Enter 6-digit OTP</label>
+              <input value={otp} onChange={e=>setOtp(e.target.value.replace(/\D/g,'').slice(0,6))}
+                placeholder="000000" maxLength={6} inputMode="numeric"
+                style={{ ...S.input, fontSize:28, letterSpacing:'0.4em', textAlign:'center', fontFamily:'var(--font-display)', fontWeight:800 }}/>
+            </div>
+            {err && <div style={{ background:C.redLight, color:C.red, borderRadius:8, padding:'10px 14px', fontSize:13 }}>⚠ {err}</div>}
+            <button onClick={verifyOtp} disabled={otp.length!==6||busy} style={{ ...S.primary, width:'100%', padding:'13px', fontSize:15, opacity:otp.length===6&&!busy?1:0.5 }}>
+              {busy ? 'Verifying…' : '✓ Sign In →'}
+            </button>
+            <button onClick={()=>{setOtpSent(false);setOtp('');setErr('');}} style={{ ...S.outline, width:'100%', padding:'10px', fontSize:13 }}>
+              ← Change phone number
+            </button>
+          </div>
+        )}
+
         <div style={{ textAlign:'center', marginTop:20, fontSize:13, color:C.muted }}>
           No account? <button onClick={()=>nav('register-buyer')} style={{ background:'none', border:'none', color:C.goldDark, fontWeight:700, cursor:'pointer' }}>Register free</button>
         </div>
@@ -202,7 +257,7 @@ function RegisterScreen({ nav, setUser, type='buyer' }) {
   const [err, setErr] = useState('');
   const [busy, setBusy] = useState(false);
   const s = (k,v) => setForm(f=>({...f,[k]:v}));
-  const STATES = ['Central Equatoria','Western Equatoria','Eastern Equatoria','Jonglei','Unity','Upper Nile','Warrap','Northern Bahr el Ghazal','Western Bahr el Ghazal','Lakes'];
+  const STATES = ['Kampala','Wakiso','Mukono','Jinja','Gulu','Mbarara','Lira','Mbale','Arua','Fort Portal','Soroti','Masaka','Entebbe','Central Region','Eastern Region','Northern Region','Western Region'];
 
   const [otpSent, setOtpSent] = useState(false);
   const [otp, setOtp] = useState('');
@@ -222,7 +277,7 @@ function RegisterScreen({ nav, setUser, type='buyer' }) {
       setConfirmResult(result);
       setOtpSent(true);
     } catch(e) {
-      setOtpErr(e.message || 'Failed to send OTP. Check phone number format (+211...)');
+      setOtpErr(e.message || 'Failed to send OTP. Check phone number format (+256...)');
       if (recaptchaRef.current) { try { recaptchaRef.current.clear(); } catch(_) {} recaptchaRef.current = null; }
     }
     setSendingOtp(false);
@@ -265,7 +320,7 @@ function RegisterScreen({ nav, setUser, type='buyer' }) {
             {isSeller ? 'Become a Seller' : 'Join as a Buyer'}
           </div>
           <div style={{ color:C.muted, fontSize:14 }}>
-            {isSeller ? 'Reach thousands of buyers for free' : 'Discover & contact sellers across South Sudan'}
+            {isSeller ? 'Reach thousands of buyers for free' : 'Discover & contact sellers across Uganda'}
           </div>
           {/* Progress */}
           <div style={{ display:'flex', gap:6, justifyContent:'center', marginTop:18 }}>
@@ -277,9 +332,9 @@ function RegisterScreen({ nav, setUser, type='buyer' }) {
 
         {step === 1 && !otpSent && (
           <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
-            <div><label style={S.label}>Full Name *</label><input value={form.name} onChange={e=>s('name',e.target.value)} placeholder="e.g. Ayen Deng" style={S.input}/></div>
+            <div><label style={S.label}>Full Name *</label><input value={form.name} onChange={e=>s('name',e.target.value)} placeholder="e.g. Nalwoga Aisha" style={S.input}/></div>
             {isSeller && <div><label style={S.label}>Business / Shop Name *</label><input value={form.business} onChange={e=>s('business',e.target.value)} placeholder="e.g. Ayen Electronics" style={S.input}/></div>}
-            <div><label style={S.label}>Phone Number *</label><input value={form.phone} onChange={e=>s('phone',e.target.value)} placeholder="+211 9XX XXX XXX" style={S.input}/></div>
+            <div><label style={S.label}>Phone Number *</label><input value={form.phone} onChange={e=>s('phone',e.target.value)} placeholder="+256 7XX XXX XXX" style={S.input}/></div>
             {otpErr && <div style={{ fontSize:12, color:C.red, padding:'8px 12px', background:C.redLight, borderRadius:8 }}>{otpErr}</div>}
             <div id="recaptcha-container"></div>
             <button onClick={sendOtp} disabled={!form.name||!form.phone||sendingOtp} style={{ ...S.primary, width:'100%', padding:'12px', opacity:form.name&&form.phone&&!sendingOtp?1:0.5 }}>
@@ -326,10 +381,9 @@ function RegisterScreen({ nav, setUser, type='buyer' }) {
               </div>
             )}
             <div><label style={S.label}>Email (optional)</label><input value={form.email} onChange={e=>s('email',e.target.value)} placeholder="you@gmail.com" style={S.input}/></div>
-            {!isSeller && <div><label style={S.label}>Create Password *</label><input type="password" value={form.password} onChange={e=>s('password',e.target.value)} placeholder="Min. 8 characters" style={S.input}/></div>}
             <div style={{ display:'flex', gap:10 }}>
               <button onClick={()=>setStep(1)} style={{ ...S.outline, flex:1 }}>← Back</button>
-              <button onClick={()=>isSeller?setStep(3):handleDone()} disabled={!isSeller&&!form.password} style={{ ...S.primary, flex:2, opacity:!isSeller&&!form.password?0.5:1 }}>{isSeller?'Continue →':'Create Account ✓'}</button>
+              <button onClick={()=>isSeller?setStep(3):handleDone()} style={{ ...S.primary, flex:2 }}>{isSeller?'Continue →':'Create Account ✓'}</button>
             </div>
           </div>
         )}
@@ -339,7 +393,6 @@ function RegisterScreen({ nav, setUser, type='buyer' }) {
             <div><label style={S.label}>About Your Business</label>
               <textarea value={form.description} onChange={e=>s('description',e.target.value)} rows={3} placeholder="Tell buyers about your products, delivery options, etc." style={{ ...S.input, resize:'vertical' }}/>
             </div>
-            <div><label style={S.label}>Create Password</label><input type="password" value={form.password} onChange={e=>s('password',e.target.value)} placeholder="Min. 8 characters" style={S.input}/></div>
             <div style={{ background:C.greenLight, borderRadius:10, padding:'12px 16px', fontSize:13, color:C.green }}>
               ✓ Free to register · No commission · Post unlimited listings
             </div>
@@ -381,7 +434,7 @@ function Navbar({ screen, nav, user, setUser }) {
             <svg width="19" height="19" viewBox="0 0 18 18" fill="none"><rect x="1" y="1" width="7" height="7" rx="1.5" fill="white"/><rect x="10" y="1" width="7" height="7" rx="1.5" fill="white" opacity="0.7"/><rect x="1" y="10" width="7" height="7" rx="1.5" fill="white" opacity="0.7"/><rect x="10" y="10" width="7" height="7" rx="1.5" fill="white" opacity="0.5"/></svg>
           </div>
           <span style={{ fontFamily:'var(--font-display)', fontWeight:800, fontSize:19, letterSpacing:'-0.02em' }}>
-            Juba<span style={{ color:C.gold }}>Market</span>
+            Kampala<span style={{ color:C.gold }}>Market</span>
           </span>
         </div>
 
@@ -430,9 +483,9 @@ function Footer({ nav }) {
         <div style={{ display:'grid', gridTemplateColumns:'2fr repeat(3,1fr)', gap:40, marginBottom:40 }}>
           <div>
             <div style={{ fontFamily:'var(--font-display)', fontWeight:800, fontSize:20, color:'white', marginBottom:12 }}>
-              Juba<span style={{ color:C.gold }}>Market</span>
+              Kampala<span style={{ color:C.gold }}>Market</span>
             </div>
-            <p style={{ fontSize:13, lineHeight:1.8, marginBottom:16 }}>South Sudan's trusted marketplace. Connect with local sellers, find great deals, and grow your business — all for free.</p>
+            <p style={{ fontSize:13, lineHeight:1.8, marginBottom:16 }}>Uganda's trusted marketplace. Connect with local sellers, find great deals, and grow your business — all for free.</p>
             <div style={{ display:'flex', gap:10 }}>
               {['📱 WhatsApp','📘 Facebook'].map(s => <div key={s} style={{ background:'rgba(255,255,255,0.08)', borderRadius:8, padding:'6px 12px', fontSize:12, cursor:'pointer' }}>{s}</div>)}
             </div>
@@ -450,7 +503,7 @@ function Footer({ nav }) {
           ))}
         </div>
         <div style={{ borderTop:'1px solid rgba(255,255,255,0.1)', paddingTop:22, display:'flex', justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap:12, fontSize:12 }}>
-          <div>© 2026 Juba Market · Made with ❤️ for South Sudan 🇸🇸</div>
+          <div>© 2026 Kampala Market · Made with ❤️ for Uganda 🇺🇬</div>
           <div style={{ display:'flex', gap:20 }}>
             {['Privacy Policy','Terms of Use','Cookie Policy'].map(l => <span key={l} style={{ cursor:'pointer' }}>{l}</span>)}
           </div>
@@ -487,10 +540,10 @@ function App() {
           window.API.getWanted(),
           window.API.getRiders(),
         ]);
-        window.JubaData.PRODUCTS  = products;
-        window.JubaData.SELLERS   = sellers;
-        window.JubaData.WANTED_ADS = wanted;
-        window.JubaData.COURIER_RIDERS = riders;
+        window.KampalaData.PRODUCTS  = products;
+        window.KampalaData.SELLERS   = sellers;
+        window.KampalaData.WANTED_ADS = wanted;
+        window.KampalaData.COURIER_RIDERS = riders;
       } catch(e) {
         console.warn('API unavailable, using static data', e.message);
       }
@@ -549,7 +602,7 @@ function App() {
       <div style={{ width:56, height:56, background:'oklch(0.72 0.16 72)', borderRadius:14, display:'flex', alignItems:'center', justifyContent:'center' }}>
         <svg width="28" height="28" viewBox="0 0 18 18" fill="none"><rect x="1" y="1" width="7" height="7" rx="1.5" fill="white"/><rect x="10" y="1" width="7" height="7" rx="1.5" fill="white" opacity="0.7"/><rect x="1" y="10" width="7" height="7" rx="1.5" fill="white" opacity="0.7"/><rect x="10" y="10" width="7" height="7" rx="1.5" fill="white" opacity="0.5"/></svg>
       </div>
-      <div style={{ fontFamily:'var(--font-display)', fontWeight:800, fontSize:22 }}>Juba<span style={{ color:'oklch(0.72 0.16 72)' }}>Market</span></div>
+      <div style={{ fontFamily:'var(--font-display)', fontWeight:800, fontSize:22 }}>Kampala<span style={{ color:'oklch(0.72 0.16 72)' }}>Market</span></div>
       <div style={{ width:32, height:32, border:'3px solid oklch(0.88 0.03 75)', borderTopColor:'oklch(0.72 0.16 72)', borderRadius:'50%', animation:'spin 0.8s linear infinite' }}/>
       <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
     </div>

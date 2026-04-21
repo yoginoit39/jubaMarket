@@ -1,4 +1,4 @@
-// jm-api.js — Juba Market API client
+// jm-api.js — Kampala Market API client
 (function () {
   const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
   const BASE = isLocal ? 'http://localhost:8008/api' : '/api';
@@ -31,6 +31,7 @@
   const API = {
     // ── Auth ──────────────────────────────────────────────────────────
     login:    (phone, password) => post('/auth/login', { phone, password }),
+    loginOtp: (phone)           => post('/auth/login-otp', { phone }),
     register: (data)            => post('/auth/register', data),
     me:       ()                => get('/auth/me'),
 

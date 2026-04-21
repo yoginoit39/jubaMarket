@@ -1,7 +1,7 @@
 // jm-courier.jsx — Courier Network
 
 function CourierScreen({ nav, user }) {
-  const { COURIER_RIDERS, DELIVERY_JOBS, PRODUCTS } = window.JubaData;
+  const { COURIER_RIDERS, DELIVERY_JOBS, PRODUCTS } = window.KampalaData;
   const [tab, setTab] = React.useState(user?.role === 'courier' ? 'jobs' : 'request');
   const [selectedRider, setSelectedRider] = React.useState(null);
   const [requestForm, setRequestForm] = React.useState({ pickup:'', dropoff:'', item:'', size:'small', notes:'' });
@@ -18,10 +18,10 @@ function CourierScreen({ nav, user }) {
       {/* Header */}
       <div style={{ background:`linear-gradient(135deg, ${C.green}, oklch(0.30 0.11 140))`, borderRadius:20, padding:'28px 32px', marginBottom:28, position:'relative', overflow:'hidden' }}>
         <div style={{ position:'absolute', right:-10, top:-10, fontSize:100, opacity:0.08 }}>🚚</div>
-        <div style={{ fontFamily:'var(--font-display)', fontWeight:800, fontSize:26, color:'white', marginBottom:6 }}>Juba Market Courier</div>
-        <div style={{ color:'rgba(255,255,255,0.75)', fontSize:14, marginBottom:16 }}>Fast, affordable delivery anywhere in Juba. Boda boda, tricycle and car riders ready now.</div>
+        <div style={{ fontFamily:'var(--font-display)', fontWeight:800, fontSize:26, color:'white', marginBottom:6 }}>Kampala Market Courier</div>
+        <div style={{ color:'rgba(255,255,255,0.75)', fontSize:14, marginBottom:16 }}>Fast, affordable delivery anywhere in Kampala. Boda boda, tricycle and car riders ready now.</div>
         <div style={{ display:'flex', gap:20 }}>
-          {[['🏍 '+COURIER_RIDERS.filter(r=>r.online).length,'Riders Online'],['⚡ ~30min','Avg. Delivery'],['📍 Juba','Coverage Area']].map(([v,l]) => (
+          {[['🏍 '+COURIER_RIDERS.filter(r=>r.online).length,'Riders Online'],['⚡ ~30min','Avg. Delivery'],['📍 Kampala','Coverage Area']].map(([v,l]) => (
             <div key={l} style={{ color:'white' }}>
               <div style={{ fontFamily:'var(--font-display)', fontWeight:800, fontSize:18 }}>{v}</div>
               <div style={{ fontSize:11, opacity:0.65 }}>{l}</div>
@@ -54,11 +54,11 @@ function CourierScreen({ nav, user }) {
                 <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
                   <div>
                     <label style={S.label}>Pickup Location (Seller)</label>
-                    <input value={requestForm.pickup} onChange={e=>rf('pickup',e.target.value)} placeholder="e.g. Konyo Konyo Market, stall 34" style={S.input}/>
+                    <input value={requestForm.pickup} onChange={e=>rf('pickup',e.target.value)} placeholder="e.g. Owino Market, stall 34" style={S.input}/>
                   </div>
                   <div>
                     <label style={S.label}>Dropoff Location (You)</label>
-                    <input value={requestForm.dropoff} onChange={e=>rf('dropoff',e.target.value)} placeholder="e.g. Gudele Block 3, near church" style={S.input}/>
+                    <input value={requestForm.dropoff} onChange={e=>rf('dropoff',e.target.value)} placeholder="e.g. Ntinda Block 3, near church" style={S.input}/>
                   </div>
                   <div>
                     <label style={S.label}>Item Description</label>
@@ -97,13 +97,13 @@ function CourierScreen({ nav, user }) {
                 <div style={{ fontSize:52, marginBottom:14 }}>🏍</div>
                 <div style={{ fontFamily:'var(--font-display)', fontWeight:800, fontSize:22, marginBottom:8 }}>Rider Found!</div>
                 <div style={{ ...S.card, padding:16, marginBottom:16, display:'flex', alignItems:'center', gap:12 }}>
-                  <Avatar initials="ML" size={48} color={C.green} online={true}/>
+                  <Avatar initials="AM" size={48} color={C.green} online={true}/>
                   <div style={{ textAlign:'left' }}>
-                    <div style={{ fontWeight:700, fontSize:16 }}>Moses Lado</div>
+                    <div style={{ fontWeight:700, fontSize:16 }}>Alex Mugisha</div>
                     <div style={{ fontSize:13, color:C.muted }}>Boda Boda · <Stars rating={4.9} size={11}/> 4.9</div>
                     <div style={{ fontSize:12, color:C.green, fontWeight:600 }}>ETA: ~20 minutes</div>
                   </div>
-                  <a href="tel:+211923111222" style={{ ...S.primary, background:C.green, padding:'8px 14px', fontSize:13, marginLeft:'auto', textDecoration:'none' }}>📞 Call</a>
+                  <a href="tel:+256723111222" style={{ ...S.primary, background:C.green, padding:'8px 14px', fontSize:13, marginLeft:'auto', textDecoration:'none' }}>📞 Call</a>
                 </div>
                 <div style={{ display:'flex', flexDirection:'column', gap:6, marginBottom:16 }}>
                   {[['Rider notified','✅'],['Heading to pickup','⏳'],['In transit','○'],['Delivered','○']].map(([s,ic]) => (
@@ -141,7 +141,7 @@ function CourierScreen({ nav, user }) {
                   </div>
                   <div style={{ fontSize:12, color:C.muted, marginBottom:10 }}>📍 {rider.zone}</div>
                   {rider.online && (
-                    <a href={`https://wa.me/${rider.phone.replace(/\D/g,'')}?text=Hi! I need a delivery via Juba Market.`} target="_blank"
+                    <a href={`https://wa.me/${rider.phone.replace(/\D/g,'')}?text=Hi! I need a delivery via Kampala Market.`} target="_blank"
                       style={{ ...S.primary, display:'block', background:C.green, textAlign:'center', padding:'9px', fontSize:13, textDecoration:'none' }}>
                       💬 Book via WhatsApp
                     </a>
@@ -212,7 +212,7 @@ function CourierScreen({ nav, user }) {
                   <div style={{ flex:1 }}><div style={{ fontSize:12, color:C.muted, marginBottom:4 }}>Zone</div><div style={{ fontSize:13 }}>{rider.zone}</div></div>
                 </div>
                 <div style={{ fontFamily:'var(--font-display)', fontWeight:800, fontSize:16, color:C.goldDark, marginBottom:12 }}>{rider.fee}</div>
-                <a href={`https://wa.me/${rider.phone.replace(/\D/g,'')}?text=Hi ${rider.name}, I need a delivery via Juba Market!`} target="_blank"
+                <a href={`https://wa.me/${rider.phone.replace(/\D/g,'')}?text=Hi ${rider.name}, I need a delivery via Kampala Market!`} target="_blank"
                   style={{ ...S.primary, display:'block', textAlign:'center', padding:'10px', fontSize:13, textDecoration:'none', background:rider.online?C.green:'#999', cursor:rider.online?'pointer':'not-allowed' }}>
                   {rider.online ? '💬 Book Now' : 'Currently Offline'}
                 </a>
@@ -236,9 +236,9 @@ function CourierScreen({ nav, user }) {
         <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
           <div style={{ fontFamily:'var(--font-display)', fontWeight:700, fontSize:18, marginBottom:4 }}>Available Jobs Near You</div>
           {[
-            { item:'Samsung Galaxy A14', from:'Konyo Konyo', to:'Gudele', fee:3, size:'Small', time:'Just now', urgent:true },
-            { item:'Bag of Maize — 10kg', from:'Jebel Market', to:'Munuki', fee:5, size:'Medium', time:'5 min ago', urgent:false },
-            { item:'Office Chair', from:'Gudele', to:'Juba Centre', fee:10, size:'Large', time:'12 min ago', urgent:false },
+            { item:'Samsung Galaxy A14', from:'Owino Market', to:'Ntinda', fee:3, size:'Small', time:'Just now', urgent:true },
+            { item:'Bag of Maize — 10kg', from:'Nakawa Market', to:'Kabalagala', fee:5, size:'Medium', time:'5 min ago', urgent:false },
+            { item:'Office Chair', from:'Ntinda', to:'Kampala City Centre', fee:10, size:'Large', time:'12 min ago', urgent:false },
           ].map((job,i) => (
             <div key={i} style={{ ...S.card, padding:20, border:`1.5px solid ${job.urgent?C.red:C.border}` }}>
               <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:10 }}>

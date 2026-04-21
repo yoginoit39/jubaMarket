@@ -1,7 +1,7 @@
 // jm-admin.jsx — Admin Dashboard
 
 function AdminDashboard({ nav }) {
-  const { PRODUCTS } = window.JubaData;
+  const { PRODUCTS } = window.KampalaData;
   const [tab, setTab] = React.useState('overview');
   const [stats, setStats] = React.useState(null);
   const [listings, setListings] = React.useState(PRODUCTS);
@@ -319,7 +319,7 @@ function AdminDashboard({ nav }) {
           <div style={{ maxWidth:580 }}>
             <div style={{ fontFamily:'var(--font-display)', fontWeight:800, fontSize:22, marginBottom:24 }}>Platform Settings</div>
             {[
-              { title:'General', fields:[['Platform Name','Juba Market'],['Support WhatsApp','+211 912 000 000'],['Admin Email','admin@jubamarket.ss'],['Base Currency','USD']] },
+              { title:'General', fields:[['Platform Name','Kampala Market'],['Support WhatsApp','+256 712 000 000'],['Admin Email','admin@kampalamarket.ug'],['Base Currency','USD']] },
               { title:'Moderation', fields:[['Require listing approval','Yes — all new listings reviewed'],['Max images per listing','6'],['Max price limit ($)','50000'],['Auto-flag price threshold','50% below category average']] },
             ].map(section => (
               <div key={section.title} style={{ ...S.card, padding:24, marginBottom:20 }}>

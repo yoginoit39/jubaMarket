@@ -1,7 +1,7 @@
 // jm-buyer.jsx v3 — Buyer Dashboard with chat, followed shops, wanted ads
 
 function BuyerDashboard({ nav, user }) {
-  const { PRODUCTS, SELLERS } = window.JubaData;
+  const { PRODUCTS, SELLERS } = window.KampalaData;
   const [tab, setTab] = React.useState('feed');
   const [wishlistIds, setWishlistIds] = React.useState([]);
   const [notifs, setNotifs] = React.useState([]);
@@ -116,7 +116,7 @@ function BuyerDashboard({ nav, user }) {
         <Avatar initials={user?.avatar||'U'} size={52} color={C.gold}/>
         <div>
           <div style={{ fontFamily:'var(--font-display)', fontWeight:800, fontSize:22 }}>{user?.name||'My Account'}</div>
-          <div style={{ fontSize:13, color:C.muted }}>Buyer · {user?.location||'Juba, Central Equatoria'}</div>
+          <div style={{ fontSize:13, color:C.muted }}>Buyer · {user?.location||'Kampala, Central Region'}</div>
         </div>
       </div>
 
@@ -345,7 +345,7 @@ function BuyerDashboard({ nav, user }) {
         <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:20, maxWidth:700 }}>
           <div style={{ ...S.card, padding:24, gridColumn:'1/-1' }}>
             <div style={{ fontFamily:'var(--font-display)', fontWeight:700, fontSize:16, marginBottom:18 }}>Personal Information</div>
-            {[['Full Name',user?.name||''],['Phone Number',user?.phone||''],['Email',user?.email||''],['Location',user?.location||'Juba, Central Equatoria']].map(([lbl,val]) => (
+            {[['Full Name',user?.name||''],['Phone Number',user?.phone||''],['Email',user?.email||''],['Location',user?.location||'Kampala, Central Region']].map(([lbl,val]) => (
               <div key={lbl} style={{ marginBottom:14 }}>
                 <label style={S.label}>{lbl}</label>
                 <input defaultValue={val} style={S.input}/>
@@ -366,7 +366,7 @@ function BuyerDashboard({ nav, user }) {
           </div>
           <div style={{ ...S.card, padding:24 }}>
             <div style={{ fontFamily:'var(--font-display)', fontWeight:700, fontSize:16, marginBottom:12 }}>Payment Methods</div>
-            <div style={{ fontSize:13, color:C.muted, lineHeight:1.7, marginBottom:12 }}>Juba Market supports cash-based payments only. Online payment coming soon.</div>
+            <div style={{ fontSize:13, color:C.muted, lineHeight:1.7, marginBottom:12 }}>Kampala Market supports cash-based payments only. Online payment coming soon.</div>
             {['💵 Cash on Delivery','📱 Mobile Money (MTN/Airtel)','🏦 Bank Transfer'].map(m => (
               <div key={m} style={{ display:'flex', alignItems:'center', gap:10, marginBottom:10, fontSize:14 }}>
                 <span style={{ color:C.green }}>✓</span> {m}

@@ -1,7 +1,7 @@
 // jm-home.jsx v3 — Home screen with Friday Market, Near Me, deal counter, trending
 
 function HomeScreen({ nav }) {
-  const { PRODUCTS, SELLERS, CATEGORIES, FRIDAY_MARKET, TRENDING_SEARCHES, NEIGHBORHOODS } = window.JubaData;
+  const { PRODUCTS, SELLERS, CATEGORIES, FRIDAY_MARKET, TRENDING_SEARCHES, NEIGHBORHOODS } = window.KampalaData;
   const [wishlist, setWishlist] = React.useState([]);
   const [dealsToday] = React.useState(Math.floor(Math.random()*8)+28);
   const [browsing] = React.useState(Math.floor(Math.random()*30)+40);
@@ -13,7 +13,7 @@ function HomeScreen({ nav }) {
   const fridayDeals = FRIDAY_MARKET.deals.map(id => PRODUCTS.find(p=>p.id===id)).filter(Boolean);
   const nearProducts = PRODUCTS.filter(p => p.neighborhood === nearMe).slice(0,4);
   const topSellers = SELLERS.slice(0,3);
-  const jubaNeighborhoods = NEIGHBORHOODS.filter(n => n.city === 'Juba');
+  const jubaNeighborhoods = NEIGHBORHOODS.filter(n => n.city === 'Kampala');
 
   const toggleWish = id => setWishlist(w => w.includes(id) ? w.filter(x=>x!==id) : [...w,id]);
 
@@ -41,10 +41,10 @@ function HomeScreen({ nav }) {
 
         <div style={{ position:'relative', maxWidth:720, margin:'0 auto', textAlign:'center' }}>
           <div style={{ display:'inline-flex', alignItems:'center', gap:8, background:'rgba(255,255,255,0.12)', borderRadius:99, padding:'6px 18px', marginBottom:16, fontSize:13, color:'rgba(255,255,255,0.9)', fontWeight:500 }}>
-            🇸🇸 South Sudan's #1 Marketplace
+            🇺🇬 Uganda's #1 Marketplace
           </div>
           <h1 style={{ fontFamily:'var(--font-display)', fontWeight:800, fontSize:'clamp(28px,5.5vw,54px)', color:'white', lineHeight:1.1, marginBottom:14, animation:'fadeUp 0.4s ease both' }}>
-            Buy & Sell Anything<br/>in South Sudan
+            Buy & Sell Anything<br/>in Uganda
           </h1>
           <p style={{ color:'rgba(255,255,255,0.72)', fontSize:16, marginBottom:26, animation:'fadeUp 0.4s ease 0.08s both' }}>
             Connect with local sellers · No middlemen · No online payment needed
@@ -138,7 +138,7 @@ function HomeScreen({ nav }) {
         {/* Near Me */}
         <div style={{ marginBottom:44 }}>
           <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:16, flexWrap:'wrap', gap:12 }}>
-            <h2 style={{ fontFamily:'var(--font-display)', fontWeight:800, fontSize:22 }}>📍 Near You in Juba</h2>
+            <h2 style={{ fontFamily:'var(--font-display)', fontWeight:800, fontSize:22 }}>📍 Near You in Kampala</h2>
             <button onClick={() => nav('browse')} style={{ ...S.outline, padding:'7px 16px', fontSize:13 }}>Browse map →</button>
           </div>
           {/* Neighborhood pills */}
@@ -239,20 +239,20 @@ function HomeScreen({ nav }) {
           <div style={{ background:`linear-gradient(135deg, ${C.green}, oklch(0.32 0.11 140))`, borderRadius:20, padding:'28px 28px' }}>
             <div style={{ fontSize:36, marginBottom:12 }}>🚚</div>
             <div style={{ fontFamily:'var(--font-display)', fontWeight:800, fontSize:18, color:'white', marginBottom:8 }}>Fast Local Delivery</div>
-            <div style={{ color:'rgba(255,255,255,0.75)', fontSize:13, marginBottom:16, lineHeight:1.6 }}>Boda boda & tricycle riders ready to deliver anywhere in Juba within the hour.</div>
+            <div style={{ color:'rgba(255,255,255,0.75)', fontSize:13, marginBottom:16, lineHeight:1.6 }}>Boda boda & tricycle riders ready to deliver anywhere in Kampala within the hour.</div>
             <button onClick={() => nav('courier')} style={{ background:'rgba(255,255,255,0.18)', border:'1px solid rgba(255,255,255,0.3)', color:'white', borderRadius:8, padding:'9px 20px', fontSize:13, cursor:'pointer', fontFamily:'var(--font-body)', fontWeight:600 }}>Find a Courier →</button>
           </div>
           <div style={{ background:`linear-gradient(135deg, ${C.goldDark}, ${C.gold})`, borderRadius:20, padding:'28px 28px' }}>
             <div style={{ fontSize:36, marginBottom:12 }}>🏪</div>
             <div style={{ fontFamily:'var(--font-display)', fontWeight:800, fontSize:18, color:'white', marginBottom:8 }}>Start Selling Today</div>
-            <div style={{ color:'rgba(255,255,255,0.78)', fontSize:13, marginBottom:16, lineHeight:1.6 }}>Free to register. Post unlimited listings. Reach 4,800+ buyers across South Sudan.</div>
+            <div style={{ color:'rgba(255,255,255,0.78)', fontSize:13, marginBottom:16, lineHeight:1.6 }}>Free to register. Post unlimited listings. Reach 4,800+ buyers across Uganda.</div>
             <button onClick={() => nav('register-seller')} style={{ background:'rgba(255,255,255,0.18)', border:'1px solid rgba(255,255,255,0.3)', color:'white', borderRadius:8, padding:'9px 20px', fontSize:13, cursor:'pointer', fontFamily:'var(--font-body)', fontWeight:600 }}>Become a Seller →</button>
           </div>
         </div>
 
         {/* How it works */}
         <div style={{ background:`linear-gradient(135deg, oklch(0.95 0.04 80), oklch(0.93 0.04 90))`, borderRadius:20, padding:'36px 32px' }}>
-          <h2 style={{ fontFamily:'var(--font-display)', fontWeight:800, fontSize:22, textAlign:'center', marginBottom:28 }}>How Juba Market Works</h2>
+          <h2 style={{ fontFamily:'var(--font-display)', fontWeight:800, fontSize:22, textAlign:'center', marginBottom:28 }}>How Kampala Market Works</h2>
           <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(180px,1fr))', gap:20 }}>
             {[
               { icon:'🔍', title:'Find It', desc:'Search or browse thousands of local listings. Filter by neighborhood, price, condition.' },

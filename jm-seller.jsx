@@ -1,7 +1,7 @@
 // jm-seller.jsx v3 — Seller Dashboard with followers, broadcast, wanted ad responses
 
 function SellerDashboard({ nav, user }) {
-  const { WANTED_ADS } = window.JubaData;
+  const { WANTED_ADS } = window.KampalaData;
   const [tab, setTab] = React.useState('overview');
   const [listings, setListings] = React.useState([]);
   const [inquiries, setInquiries] = React.useState([]);
@@ -25,7 +25,7 @@ function SellerDashboard({ nav, user }) {
       setInquiries(inqs.map(i => ({
         id: i.id,
         buyer: i.buyerName,
-        phone: '+211 900 000 000',
+        phone: '+256 700 000 000',
         msg: i.lastMsg || i.messages?.slice(-1)[0]?.text || '',
         time: i.time,
         product: i.productTitle,
@@ -184,7 +184,7 @@ function SellerDashboard({ nav, user }) {
                     {p.dealPrice && <Badge variant="red">Deal</Badge>}
                   </div>
                 </div>
-                <div style={{ fontFamily:'var(--font-display)', fontWeight:800, fontSize:18, color:C.goldDark }}>${p.price}</div>
+                <div style={{ fontFamily:'var(--font-display)', fontWeight:800, fontSize:18, color:C.goldDark }}>{fmt(p.price)}</div>
                 <div style={{ display:'flex', gap:8 }}>
                   <button style={{ ...S.outline, padding:'7px 14px', fontSize:12 }}>Edit</button>
                   <button onClick={()=>setListings(l=>l.filter(x=>x.id!==p.id))} style={{ ...S.danger, padding:'7px 14px', fontSize:12 }}>Delete</button>
@@ -229,7 +229,7 @@ function SellerDashboard({ nav, user }) {
           <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:14, marginBottom:24 }}>
             <StatCard icon="👥" label="Total Followers" value={followers.length} sub="+3 this week" color={C.green}/>
             <StatCard icon="📢" label="Last Broadcast" value="3 days ago" sub="94% open rate" color={C.goldDark}/>
-            <StatCard icon="💰" label="From Followers" value="$2,840" sub="Est. revenue" color={C.green}/>
+            <StatCard icon="💰" label="From Followers" value="UGX 10.5M" sub="Est. revenue" color={C.green}/>
           </div>
 
           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:16 }}>
@@ -278,7 +278,7 @@ function SellerDashboard({ nav, user }) {
                     <div style={{ fontFamily:'var(--font-display)', fontWeight:700, fontSize:17 }}>{ad.title}</div>
                     <div style={{ fontSize:13, color:C.muted, marginTop:4 }}>📍 {ad.location} · Posted {ad.posted} · {ad.responses} offers so far</div>
                   </div>
-                  <div style={{ fontFamily:'var(--font-display)', fontWeight:800, fontSize:22, color:C.green, flexShrink:0 }}>Up to ${ad.budget}</div>
+                  <div style={{ fontFamily:'var(--font-display)', fontWeight:800, fontSize:22, color:C.green, flexShrink:0 }}>Up to {fmt(ad.budget)}</div>
                 </div>
                 <p style={{ fontSize:13, color:C.muted, lineHeight:1.6, marginBottom:14 }}>{ad.description}</p>
                 <div style={{ display:'flex', gap:10 }}>
@@ -340,9 +340,9 @@ function SellerDashboard({ nav, user }) {
           </div>
           <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(220px,1fr))', gap:16 }}>
             {[
-              { plan:'Basic', price:'$5/week', features:['Top of category results','Featured badge','2× more views'], popular:false },
-              { plan:'Pro', price:'$12/week', features:['Homepage featured slot','5× more views','Priority support','Analytics report'], popular:true },
-              { plan:'Premium', price:'$25/week', features:['Hero banner position','10× more views','Daily deal eligibility','Dedicated account manager'], popular:false },
+              { plan:'Basic', price:'UGX 18,000/wk', features:['Top of category results','Featured badge','2× more views'], popular:false },
+              { plan:'Pro', price:'UGX 45,000/wk', features:['Homepage featured slot','5× more views','Priority support','Analytics report'], popular:true },
+              { plan:'Premium', price:'UGX 90,000/wk', features:['Hero banner position','10× more views','Daily deal eligibility','Dedicated account manager'], popular:false },
             ].map(b => (
               <div key={b.plan} style={{ ...S.card, padding:24, border:`2px solid ${b.popular?C.gold:C.border}`, position:'relative' }}>
                 {b.popular && <div style={{ position:'absolute', top:-12, left:'50%', transform:'translateX(-50%)', background:C.gold, color:'white', padding:'3px 16px', borderRadius:99, fontSize:11, fontWeight:800 }}>MOST POPULAR</div>}
@@ -364,7 +364,7 @@ function SellerDashboard({ nav, user }) {
         <div style={{ maxWidth:520 }}>
           <div style={{ ...S.card, padding:24 }}>
             <div style={{ fontFamily:'var(--font-display)', fontWeight:700, fontSize:16, marginBottom:18 }}>Shop Information</div>
-            {[['Shop Name',user?.business||'My Shop'],['Your Name',user?.name||''],['WhatsApp','+211 912 345 678'],['Email','seller@gmail.com'],['Location','Juba, Central Equatoria']].map(([lbl,val]) => (
+            {[['Shop Name',user?.business||'My Shop'],['Your Name',user?.name||''],['WhatsApp','+256 712 345 678'],['Email','seller@gmail.com'],['Location','Kampala, Central Region']].map(([lbl,val]) => (
               <div key={lbl} style={{ marginBottom:14 }}>
                 <label style={S.label}>{lbl}</label>
                 <input defaultValue={val} style={S.input}/>
@@ -405,7 +405,7 @@ function SellerDashboard({ nav, user }) {
                 </div>
               </div>
               <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
-                <div><label style={S.label}>Price (USD) *</label><input type="number" value={postForm.price} onChange={e=>sp('price',e.target.value)} placeholder="0.00" style={S.input}/></div>
+                <div><label style={S.label}>Price (UGX) *</label><input type="number" value={postForm.price} onChange={e=>sp('price',e.target.value)} placeholder="e.g. 150000" style={S.input}/></div>
                 <div><label style={S.label}>Stock / Qty</label><input type="number" value={postForm.stock} onChange={e=>sp('stock',e.target.value)} placeholder="1" style={S.input}/></div>
               </div>
               <div style={{ display:'flex', alignItems:'center', gap:10 }}>
@@ -440,7 +440,7 @@ function SellerDashboard({ nav, user }) {
               </div>
               <div>
                 <label style={S.label}>Your Message</label>
-                <textarea value={broadcastMsg} onChange={e=>setBroadcastMsg(e.target.value)} rows={5} placeholder="e.g. 🎉 Big restock this Friday! New phones just arrived from Kampala. Come early for best prices. Available at Konyo Konyo, stall 14." style={{ ...S.input, resize:'vertical' }}/>
+                <textarea value={broadcastMsg} onChange={e=>setBroadcastMsg(e.target.value)} rows={5} placeholder="e.g. 🎉 Big restock this Friday! New phones just arrived from Nairobi. Come early for best prices. Available at Owino Market, stall 14." style={{ ...S.input, resize:'vertical' }}/>
                 <div style={{ fontSize:12, color:C.muted, marginTop:4, textAlign:'right' }}>{broadcastMsg.length}/280</div>
               </div>
               <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>

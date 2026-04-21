@@ -1,11 +1,11 @@
 // jm-browse.jsx v3 — Browse, Product Detail, Seller Store with Near Me + followers
 
 function BrowseScreen({ nav, initCategory='all' }) {
-  const { PRODUCTS, SELLERS, CATEGORIES, NEIGHBORHOODS } = window.JubaData;
+  const { PRODUCTS, SELLERS, CATEGORIES, NEIGHBORHOODS } = window.KampalaData;
   const [search, setSearch] = React.useState('');
   const [cat, setCat] = React.useState(initCategory);
   const [sort, setSort] = React.useState('trending');
-  const [priceMax, setPriceMax] = React.useState(1000);
+  const [priceMax, setPriceMax] = React.useState(5000000);
   const [condition, setCondition] = React.useState('all');
   const [neighborhood, setNeighborhood] = React.useState('all');
   const [wishlist, setWishlist] = React.useState([]);
@@ -76,9 +76,9 @@ function BrowseScreen({ nav, initCategory='all' }) {
             </div>
 
             <div style={{ marginBottom:16 }}>
-              <label style={S.label}>Max Price: ${priceMax}</label>
-              <input type="range" min={5} max={1000} value={priceMax} onChange={e=>setPriceMax(Number(e.target.value))} style={{ width:'100%', accentColor:C.gold }}/>
-              <div style={{ display:'flex', justifyContent:'space-between', fontSize:11, color:C.muted }}><span>$5</span><span>$1,000</span></div>
+              <label style={S.label}>Max Price: {fmt(priceMax)}</label>
+              <input type="range" min={10000} max={5000000} step={10000} value={priceMax} onChange={e=>setPriceMax(Number(e.target.value))} style={{ width:'100%', accentColor:C.gold }}/>
+              <div style={{ display:'flex', justifyContent:'space-between', fontSize:11, color:C.muted }}><span>UGX 10K</span><span>UGX 5M</span></div>
             </div>
 
             <div style={{ marginBottom:14 }}>
@@ -142,8 +142,8 @@ function BrowseScreen({ nav, initCategory='all' }) {
                       </div>
                       <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
                         <span style={{ fontFamily:'var(--font-display)', fontWeight:800, fontSize:18, color:p.dealPrice?C.red:C.goldDark }}>
-                          ${p.dealPrice||p.price}
-                          {p.dealPrice && <span style={{ fontFamily:'var(--font-body)', fontWeight:400, fontSize:12, color:C.light, textDecoration:'line-through', marginLeft:6 }}>${p.price}</span>}
+                          {fmt(p.dealPrice||p.price)}
+                          {p.dealPrice && <span style={{ fontFamily:'var(--font-body)', fontWeight:400, fontSize:12, color:C.light, textDecoration:'line-through', marginLeft:6 }}>{fmt(p.price)}</span>}
                         </span>
                         <div style={{ display:'flex', alignItems:'center', gap:6 }}>
                           <Avatar initials={seller?.avatar} size={22} color={C.green} online={seller?.online}/>
@@ -164,7 +164,7 @@ function BrowseScreen({ nav, initCategory='all' }) {
 
 // ─── Product Detail ───────────────────────────────────────────────────────
 function ProductScreen({ nav, productId }) {
-  const { PRODUCTS, SELLERS, REVIEWS } = window.JubaData;
+  const { PRODUCTS, SELLERS, REVIEWS } = window.KampalaData;
   const product = PRODUCTS.find(p=>p.id===productId);
   const seller = product ? SELLERS.find(s=>s.id===product.sellerId) : null;
   const reviews = REVIEWS.filter(r=>r.sellerId===product?.sellerId);
@@ -235,17 +235,17 @@ function ProductScreen({ nav, productId }) {
 
             <div style={{ display:'flex', alignItems:'baseline', gap:10, marginBottom:6 }}>
               {product.dealPrice ? (
-                <><span style={{ fontFamily:'var(--font-display)', fontWeight:800, fontSize:34, color:C.red }}>${product.dealPrice}</span>
-                <span style={{ fontSize:16, color:C.light, textDecoration:'line-through' }}>${product.price}</span>
+                <><span style={{ fontFamily:'var(--font-display)', fontWeight:800, fontSize:34, color:C.red }}>{fmt(product.dealPrice)}</span>
+                <span style={{ fontSize:16, color:C.light, textDecoration:'line-through' }}>{fmt(product.price)}</span>
                 <Badge variant="red">SALE</Badge></>
               ) : (
-                <span style={{ fontFamily:'var(--font-display)', fontWeight:800, fontSize:34, color:C.goldDark }}>${product.price}</span>
+                <span style={{ fontFamily:'var(--font-display)', fontWeight:800, fontSize:34, color:C.goldDark }}>{fmt(product.price)}</span>
               )}
             </div>
             {product.negotiable && <div style={{ fontSize:13, color:C.green, fontWeight:600, marginBottom:16 }}>✓ Price negotiable — make an offer!</div>}
 
             <div style={{ background:C.creamDark, borderRadius:10, padding:'14px 16px', marginBottom:16 }}>
-              {[['Condition',product.condition],['Location','📍 '+product.location],['Neighborhood',window.JubaData.NEIGHBORHOODS.find(n=>n.id===product.neighborhood)?.label||product.location],['Stock',product.stock+' available'],['Posted',product.postedAt]].map(([k,v]) => (
+              {[['Condition',product.condition],['Location','📍 '+product.location],['Neighborhood',window.KampalaData.NEIGHBORHOODS.find(n=>n.id===product.neighborhood)?.label||product.location],['Stock',product.stock+' available'],['Posted',product.postedAt]].map(([k,v]) => (
                 <div key={k} style={{ display:'flex', justifyContent:'space-between', fontSize:13, marginBottom:5 }}>
                   <span style={{ color:C.muted }}>{k}</span><span style={{ fontWeight:600 }}>{v}</span>
                 </div>
@@ -327,7 +327,7 @@ function ProductScreen({ nav, productId }) {
 
 // ─── Seller Store (public) ────────────────────────────────────────────────
 function SellerStoreScreen({ nav, sellerId }) {
-  const { SELLERS, PRODUCTS, REVIEWS } = window.JubaData;
+  const { SELLERS, PRODUCTS, REVIEWS } = window.KampalaData;
   const seller = SELLERS.find(s=>s.id===sellerId);
   const listings = PRODUCTS.filter(p=>p.sellerId===sellerId);
   const reviews = REVIEWS.filter(r=>r.sellerId===sellerId);

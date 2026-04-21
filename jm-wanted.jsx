@@ -1,19 +1,19 @@
 // jm-wanted.jsx — Wanted Ads board with bidding flow
 
 function WantedScreen({ nav, user }) {
-  const { CATEGORIES } = window.JubaData;
+  const { CATEGORIES } = window.KampalaData;
   const [ads, setAds] = React.useState([]);
   const [showPost, setShowPost] = React.useState(false);
   const [selectedAd, setSelectedAd] = React.useState(null);
   const [filter, setFilter] = React.useState('all');
   const [posted, setPosted] = React.useState(false);
   const [posting, setPosting] = React.useState(false);
-  const [form, setForm] = React.useState({ title:'', category:'', budget:'', location:'Juba', description:'', urgent:false });
+  const [form, setForm] = React.useState({ title:'', category:'', budget:'', location:'Kampala', description:'', urgent:false });
   const sf = (k,v) => setForm(f=>({...f,[k]:v}));
 
   React.useEffect(() => {
     window.API.getWanted().then(data => setAds(data)).catch(() => {
-      setAds(window.JubaData.WANTED_ADS || []);
+      setAds(window.KampalaData.WANTED_ADS || []);
     });
   }, []);
 
@@ -26,13 +26,13 @@ function WantedScreen({ nav, user }) {
       const newAd = await window.API.createWanted(payload);
       setAds(a => [newAd, ...a]);
       setPosted(true);
-      setTimeout(() => { setPosted(false); setShowPost(false); setForm({ title:'', category:'', budget:'', location:'Juba', description:'', urgent:false }); }, 2200);
+      setTimeout(() => { setPosted(false); setShowPost(false); setForm({ title:'', category:'', budget:'', location:'Kampala', description:'', urgent:false }); }, 2200);
     } catch(e) {
       // fallback: show locally
       const newAd = { id:'w_'+Date.now(), ...form, budget:parseFloat(form.budget)||0, buyerName:user?.name||'You', buyerAvatar:(user?.name||'U').slice(0,2).toUpperCase(), posted:'Just now', responses:0, status:'open' };
       setAds(a => [newAd,...a]);
       setPosted(true);
-      setTimeout(() => { setPosted(false); setShowPost(false); setForm({ title:'', category:'', budget:'', location:'Juba', description:'', urgent:false }); }, 2200);
+      setTimeout(() => { setPosted(false); setShowPost(false); setForm({ title:'', category:'', budget:'', location:'Kampala', description:'', urgent:false }); }, 2200);
     } finally { setPosting(false); }
   };
 
@@ -93,11 +93,11 @@ function WantedScreen({ nav, user }) {
                     {CATEGORIES.filter(c=>c.id!=='all').map(c=><option key={c.id} value={c.id}>{c.label}</option>)}
                   </select>
                 </div>
-                <div><label style={S.label}>Max Budget (USD)</label><input type="number" value={form.budget} onChange={e=>sf('budget',e.target.value)} placeholder="e.g. 500" style={S.input}/></div>
+                <div><label style={S.label}>Max Budget (UGX)</label><input type="number" value={form.budget} onChange={e=>sf('budget',e.target.value)} placeholder="e.g. 2000000" style={S.input}/></div>
               </div>
               <div><label style={S.label}>Location</label>
                 <select value={form.location} onChange={e=>sf('location',e.target.value)} style={{ ...S.input, cursor:'pointer' }}>
-                  {['Juba','Yei','Malakal','Wau','Bor','Aweil'].map(l=><option key={l}>{l}</option>)}
+                  {['Kampala','Entebbe','Jinja','Gulu','Mbarara','Mbale'].map(l=><option key={l}>{l}</option>)}
                 </select>
               </div>
               <div><label style={S.label}>Describe What You Need *</label><textarea value={form.description} onChange={e=>sf('description',e.target.value)} rows={4} placeholder="Be specific — brand, condition, quantity, how quickly you need it…" style={{ ...S.input, resize:'vertical' }}/></div>
@@ -123,7 +123,7 @@ function WantedScreen({ nav, user }) {
 }
 
 function WantedAdCard({ ad, onView, isSeller, style: extraStyle }) {
-  const catIcon = window.JubaData.CATEGORIES.find(c=>c.id===ad.category)?.icon || '📦';
+  const catIcon = window.KampalaData.CATEGORIES.find(c=>c.id===ad.category)?.icon || '📦';
   return (
     <div onClick={onView} style={{ ...S.card, cursor:'pointer', padding:20, transition:'all 0.2s', border:`1.5px solid ${ad.urgent?C.red:C.border}`, ...extraStyle }}
       onMouseEnter={e=>{e.currentTarget.style.transform='translateY(-2px)';e.currentTarget.style.boxShadow='0 8px 28px rgba(0,0,0,0.12)';}}
@@ -139,7 +139,7 @@ function WantedAdCard({ ad, onView, isSeller, style: extraStyle }) {
       <div style={{ fontSize:13, color:C.muted, marginBottom:14, lineHeight:1.6, display:'-webkit-box', WebkitLineClamp:2, WebkitBoxOrient:'vertical', overflow:'hidden' }}>{ad.description}</div>
       <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
         <div>
-          <div style={{ fontFamily:'var(--font-display)', fontWeight:800, fontSize:20, color:C.green }}>Up to ${ad.budget}</div>
+          <div style={{ fontFamily:'var(--font-display)', fontWeight:800, fontSize:20, color:C.green }}>Up to {fmt(ad.budget)}</div>
           <div style={{ fontSize:11, color:C.muted }}>📍 {ad.location}</div>
         </div>
         <div style={{ textAlign:'right' }}>
@@ -193,7 +193,7 @@ function WantedAdDetail({ ad, onClose, isSeller, user }) {
         <div style={{ fontFamily:'var(--font-display)', fontWeight:700, fontSize:18, marginBottom:6 }}>{ad.title}</div>
         <p style={{ fontSize:13, color:C.muted, lineHeight:1.6, marginBottom:10 }}>{ad.description}</p>
         <div style={{ display:'flex', gap:20, fontSize:13 }}>
-          <span>💰 Budget: <strong style={{ color:C.green }}>${ad.budget}</strong></span>
+          <span>💰 Budget: <strong style={{ color:C.green }}>{fmt(ad.budget)}</strong></span>
           <span>📍 {ad.location}</span>
           <span>🕐 {ad.posted}</span>
         </div>
@@ -204,7 +204,7 @@ function WantedAdDetail({ ad, onClose, isSeller, user }) {
         <div style={{ border:`1.5px solid ${C.gold}`, borderRadius:12, padding:18, marginBottom:20 }}>
           <div style={{ fontFamily:'var(--font-display)', fontWeight:700, fontSize:15, marginBottom:14, color:C.goldDark }}>🤝 Submit Your Offer</div>
           <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
-            <div><label style={S.label}>Your Price (USD)</label><input type="number" value={myBid.price} onChange={e=>setMyBid(b=>({...b,price:e.target.value}))} placeholder={`Max budget is $${ad.budget}`} style={S.input}/></div>
+            <div><label style={S.label}>Your Price (UGX)</label><input type="number" value={myBid.price} onChange={e=>setMyBid(b=>({...b,price:e.target.value}))} placeholder={`Max budget is ${fmt(ad.budget)}`} style={S.input}/></div>
             <div><label style={S.label}>Your Message</label><textarea value={myBid.note} onChange={e=>setMyBid(b=>({...b,note:e.target.value}))} rows={3} placeholder="Describe your product, condition, and when you can deliver…" style={{ ...S.input, resize:'vertical' }}/></div>
             <button onClick={submitOffer} disabled={!myBid.price||bidding} style={{ ...S.primary, background:C.green, padding:'11px', opacity:myBid.price&&!bidding?1:0.5 }}>
               {bidding ? 'Submitting…' : 'Submit Offer →'}
@@ -240,7 +240,7 @@ function WantedAdDetail({ ad, onClose, isSeller, user }) {
                   </div>
                 </div>
               </div>
-              <div style={{ fontFamily:'var(--font-display)', fontWeight:800, fontSize:20, color:C.green }}>${bid.price}</div>
+              <div style={{ fontFamily:'var(--font-display)', fontWeight:800, fontSize:20, color:C.green }}>{fmt(bid.price)}</div>
             </div>
             <p style={{ fontSize:13, color:C.muted, lineHeight:1.6, marginBottom:12 }}>{bid.note}</p>
             <div style={{ display:'flex', gap:8 }}>

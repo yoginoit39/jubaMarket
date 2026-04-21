@@ -6,7 +6,7 @@ from sqlalchemy import func
 from pydantic import BaseModel
 from typing import Optional, List, Any
 from datetime import datetime
-import json, os
+import json, os, secrets
 from dotenv import load_dotenv
 
 from database import engine, get_db, Base
@@ -18,7 +18,7 @@ from auth import hash_password, check_password, create_token, decode_token
 load_dotenv()
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI(title="Juba Market API", version="1.0")
+app = FastAPI(title="Kampala Market API", version="1.0")
 
 app.add_middleware(
     CORSMiddleware,
@@ -202,7 +202,7 @@ def ser_wanted(ad: WantedAd, db: Session) -> dict:
 class RegisterIn(BaseModel):
     name: str
     phone: str
-    password: str
+    password: Optional[str] = None
     role: str = "buyer"
     email: Optional[str] = None
     location: Optional[str] = None
@@ -212,6 +212,9 @@ class LoginIn(BaseModel):
     phone: str
     password: str
     role: Optional[str] = None
+
+class LoginOtpIn(BaseModel):
+    phone: str
 
 class ProductIn(BaseModel):
     title: str
@@ -239,7 +242,7 @@ class WantedIn(BaseModel):
     title: str
     category: Optional[str] = None
     budget: Optional[float] = None
-    location: str = "Juba"
+    location: str = "Kampala"
     description: Optional[str] = None
     urgent: bool = False
 
@@ -271,11 +274,12 @@ def register(body: RegisterIn, db: Session = Depends(get_db)):
         raise HTTPException(400, "Phone already registered")
     if body.email and db.query(User).filter(User.email == body.email).first():
         raise HTTPException(400, "Email already registered")
+    pw = body.password if body.password else secrets.token_hex(32)
     user = User(
         name=body.name,
         phone=body.phone,
         email=body.email,
-        password_hash=hash_password(body.password),
+        password_hash=hash_password(pw),
         role=body.role,
         location=body.location,
         business_name=body.business,
@@ -298,6 +302,17 @@ def login(body: LoginIn, db: Session = Depends(get_db)):
     token = create_token({"sub": str(user.id), "role": user.role})
     return {"token": token, "user": ser_user(user)}
 
+@app.post("/api/auth/login-otp")
+def login_otp(body: LoginOtpIn, db: Session = Depends(get_db)):
+    """Firebase already verified the phone — just issue a JWT."""
+    user = db.query(User).filter(User.phone == body.phone).first()
+    if not user:
+        raise HTTPException(404, "No account found for this phone number. Please register first.")
+    if user.status == "suspended":
+        raise HTTPException(403, "Account suspended")
+    token = create_token({"sub": str(user.id), "role": user.role})
+    return {"token": token, "user": ser_user(user)}
+
 @app.get("/api/auth/me")
 def me(user: User = Depends(get_current_user)):
     return ser_user(user)
@@ -309,7 +324,7 @@ def list_products(
     search: str = Query(""),
     category: str = Query("all"),
     sort: str = Query("trending"),
-    price_max: float = Query(10000),
+    price_max: float = Query(50000000),
     condition: str = Query("all"),
     neighborhood: str = Query("all"),
     db: Session = Depends(get_db),
@@ -355,7 +370,7 @@ def create_product(body: ProductIn, user: User = Depends(require_role("seller", 
         stock=body.stock,
         description=body.description,
         tags=json.dumps(body.tags or []),
-        location=user.location or "Juba",
+        location=user.location or "Kampala",
         neighborhood=body.neighborhood or "all",
         seller_id=user.id,
         status="active",

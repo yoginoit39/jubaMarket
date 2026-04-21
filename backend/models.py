@@ -101,7 +101,7 @@ class WantedAd(Base):
     title        = Column(String, nullable=False)
     category     = Column(String)
     budget       = Column(Float)
-    location     = Column(String, default="Juba")
+    location     = Column(String, default="Kampala")
     neighborhood = Column(String, default="all")
     description  = Column(Text)
     urgent       = Column(Boolean, default=False)
