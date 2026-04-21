@@ -334,7 +334,7 @@ function Navbar({ screen, nav, user, setUser }) {
                 <Avatar initials={user.avatar} size={28} color={user.role==='admin'?C.red:user.role==='seller'?C.green:C.gold}/>
                 <span style={{ fontSize:13, fontWeight:600 }}>{user.name}</span>
               </div>
-              <button onClick={()=>handleSetUser(null)} style={{ ...S.outline, padding:'7px 14px', fontSize:13 }}>Sign out</button>
+              <button onClick={()=>setUser(null)} style={{ ...S.outline, padding:'7px 14px', fontSize:13 }}>Sign out</button>
             </>
           ) : (
             <>
